@@ -1,0 +1,13 @@
+.swiper-container {
+    width: 600px;
+    height: 300px;
+}
+#swiper1 {
+    background: red;
+}
+#swiper2 {
+    background: green;
+}
+#swiper3 {
+    background: blue;
+}
