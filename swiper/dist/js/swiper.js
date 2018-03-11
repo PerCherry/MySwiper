@@ -1,32 +1,9 @@
-/**
- * Swiper 4.1.6
- * Most modern mobile touch slider and framework with hardware accelerated transitions
- * http://www.idangero.us/swiper/
- *
- * Copyright 2014-2018 Vladimir Kharlampidi
- *
- * Released under the MIT License
- *
- * Released on: February 11, 2018
- */
-
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
 	(global.Swiper = factory());
 }(this, (function () { 'use strict';
 
-/**
- * SSR Window 1.0.0
- * Better handling for window object in SSR environment
- * https://github.com/nolimits4web/ssr-window
- *
- * Copyright 2018, Vladimir Kharlampidi
- *
- * Licensed under MIT
- *
- * Released on: February 10, 2018
- */
 var d;
 if (typeof document === 'undefined') {
   d = {
@@ -105,19 +82,6 @@ if (typeof window === 'undefined') {
 
 var win = w;
 
-/**
- * Dom7 2.0.2
- * Minimalistic JavaScript library for DOM manipulation, with a jQuery-compatible API
- * http://framework7.io/docs/dom.html
- *
- * Copyright 2018, Vladimir Kharlampidi
- * The iDangero.us
- * http://www.idangero.us/
- *
- * Licensed under MIT
- *
- * Released on: February 10, 2018
- */
 var Dom7 = function Dom7(arr) {
   var self = this;
   // Create array-like object
@@ -961,25 +925,6 @@ var Utils = {
     }
     return curTransform || 0;
   },
-  parseUrlQuery: function parseUrlQuery(url) {
-    var query = {};
-    var urlToParse = url || win.location.href;
-    var i;
-    var params;
-    var param;
-    var length;
-    if (typeof urlToParse === 'string' && urlToParse.length) {
-      urlToParse = urlToParse.indexOf('?') > -1 ? urlToParse.replace(/\S*\?/, '') : '';
-      params = urlToParse.split('&').filter(function (paramsPart) { return paramsPart !== ''; });
-      length = params.length;
-
-      for (i = 0; i < length; i += 1) {
-        param = params[i].replace(/#\S+/g, '').split('=');
-        query[decodeURIComponent(param[0])] = typeof param[1] === 'undefined' ? undefined : decodeURIComponent(param[1]) || '';
-      }
-    }
-    return query;
-  },
   isObject: function isObject(o) {
     return typeof o === 'object' && o !== null && o.constructor && o.constructor === Object;
   },
@@ -1059,10 +1004,6 @@ var Support = (function Support() {
       }
       return supportsPassive;
     }()),
-
-    gestures: (function checkGestures() {
-      return 'ongesturestart' in win;
-    }()),
   };
 }());
 
@@ -1091,18 +1032,6 @@ SwiperClass.prototype.on = function on (events, handler) {
     self.eventsListeners[event].push(handler);
   });
   return self;
-};
-SwiperClass.prototype.once = function once (events, handler) {
-  var self = this;
-  if (typeof handler !== 'function') { return self; }
-  function onceHandler() {
-      var args = [], len = arguments.length;
-      while ( len-- ) args[ len ] = arguments[ len ];
-
-    handler.apply(self, args);
-    self.off(events, onceHandler);
-  }
-  return self.on(events, onceHandler);
 };
 SwiperClass.prototype.off = function off (events, handler) {
   var self = this;
@@ -1278,8 +1207,7 @@ var updateSlides = function () {
   var rtl = swiper.rtl;
   var wrongRTL = swiper.wrongRTL;
   var slides = $wrapperEl.children(("." + (swiper.params.slideClass)));
-  var isVirtual = swiper.virtual && params.virtual.enabled;
-  var slidesLength = isVirtual ? swiper.virtual.slides.length : slides.length;
+  var slidesLength = slides.length;
   var snapGrid = [];
   var slidesGrid = [];
   var slidesSizesGrid = [];
@@ -1369,7 +1297,7 @@ var updateSlides = function () {
   var newSlidesGrid;
 
   if (
-    rtl && wrongRTL && (params.effect === 'slide' || params.effect === 'coverflow')) {
+    rtl && wrongRTL && params.effect === 'slide') {
     $wrapperEl.css({ width: ((swiper.virtualSize + params.spaceBetween) + "px") });
   }
   if (!Support.flexbox || params.setWrapperSize) {
@@ -1519,16 +1447,11 @@ var updateSlidesClasses = function () {
   var $wrapperEl = swiper.$wrapperEl;
   var activeIndex = swiper.activeIndex;
   var realIndex = swiper.realIndex;
-  var isVirtual = swiper.virtual && params.virtual.enabled;
 
   slides.removeClass(((params.slideActiveClass) + " " + (params.slideNextClass) + " " + (params.slidePrevClass) + " " + (params.slideDuplicateActiveClass) + " " + (params.slideDuplicateNextClass) + " " + (params.slideDuplicatePrevClass)));
 
   var activeSlide;
-  if (isVirtual) {
-    activeSlide = swiper.$wrapperEl.find(("." + (params.slideClass) + "[data-swiper-slide-index=\"" + activeIndex + "\"]"));
-  } else {
-    activeSlide = slides.eq(activeIndex);
-  }
+  activeSlide = slides.eq(activeIndex);
 
   // Active classes
   activeSlide.addClass(params.slideActiveClass);
@@ -1652,11 +1575,7 @@ var updateClickedSlide = function (e) {
 
   if (slide && slideFound) {
     swiper.clickedSlide = slide;
-    if (swiper.virtual && swiper.params.virtual.enabled) {
-      swiper.clickedIndex = parseInt($$1(slide).attr('data-swiper-slide-index'), 10);
-    } else {
-      swiper.clickedIndex = $$1(slide).index();
-    }
+    swiper.clickedIndex = $$1(slide).index();
   } else {
     swiper.clickedSlide = undefined;
     swiper.clickedIndex = undefined;
@@ -1870,15 +1789,6 @@ var slideTo = function (index, speed, runCallbacks, internal) {
       }
     }
   }
-  // Directions locks
-  if (swiper.initialized && slideIndex !== activeIndex) {
-    if (!swiper.allowSlideNext && translate < swiper.translate && translate < swiper.minTranslate()) {
-      return false;
-    }
-    if (!swiper.allowSlidePrev && translate > swiper.translate && translate > swiper.maxTranslate()) {
-      if ((activeIndex || 0) !== slideIndex) { return false; }
-    }
-  }
 
   var direction;
   if (slideIndex > activeIndex) { direction = 'next'; }
@@ -1890,9 +1800,6 @@ var slideTo = function (index, speed, runCallbacks, internal) {
   if ((rtl && -translate === swiper.translate) || (!rtl && translate === swiper.translate)) {
     swiper.updateActiveIndex(slideIndex);
     swiper.updateSlidesClasses();
-    if (params.effect !== 'slide') {
-      swiper.setTranslate(translate);
-    }
     if (direction !== 'reset') {
       swiper.transitionStart(runCallbacks, direction);
       swiper.transitionEnd(runCallbacks, direction);
@@ -1925,20 +1832,6 @@ var slideTo = function (index, speed, runCallbacks, internal) {
   }
 
   return true;
-};
-
-var slideToLoop = function (index, speed, runCallbacks, internal) {
-  if ( index === void 0 ) index = 0;
-  if ( speed === void 0 ) speed = this.params.speed;
-  if ( runCallbacks === void 0 ) runCallbacks = true;
-
-  var swiper = this;
-  var newIndex = index;
-  if (swiper.params.loop) {
-    newIndex += swiper.loopedSlides;
-  }
-
-  return swiper.slideTo(newIndex, speed, runCallbacks, internal);
 };
 
 /* eslint no-unused-vars: "off" */
@@ -1978,21 +1871,10 @@ var slidePrev = function (speed, runCallbacks, internal) {
   return swiper.slideTo(swiper.activeIndex - 1, speed, runCallbacks, internal);
 };
 
-/* eslint no-unused-vars: "off" */
-var slideReset = function (speed, runCallbacks, internal) {
-  if ( speed === void 0 ) speed = this.params.speed;
-  if ( runCallbacks === void 0 ) runCallbacks = true;
-
-  var swiper = this;
-  return swiper.slideTo(swiper.activeIndex, speed, runCallbacks, internal);
-};
-
 var slide = {
   slideTo: slideTo,
-  slideToLoop: slideToLoop,
   slideNext: slideNext,
   slidePrev: slidePrev,
-  slideReset: slideReset,
 };
 
 var loopCreate = function () {
@@ -2045,13 +1927,9 @@ var loopFix = function () {
   var activeIndex = swiper.activeIndex;
   var slides = swiper.slides;
   var loopedSlides = swiper.loopedSlides;
-  var allowSlidePrev = swiper.allowSlidePrev;
-  var allowSlideNext = swiper.allowSlideNext;
   var snapGrid = swiper.snapGrid;
   var rtl = swiper.rtl;
   var newIndex;
-  swiper.allowSlidePrev = true;
-  swiper.allowSlideNext = true;
 
   var snapTranslate = -snapGrid[activeIndex];
   var diff = snapTranslate - swiper.getTranslate();
@@ -2074,8 +1952,6 @@ var loopFix = function () {
       swiper.setTranslate((rtl ? -swiper.translate : swiper.translate) - diff);
     }
   }
-  swiper.allowSlidePrev = allowSlidePrev;
-  swiper.allowSlideNext = allowSlideNext;
 };
 
 var loopDestroy = function () {
@@ -2142,62 +2018,9 @@ var prependSlide = function (slides) {
   swiper.slideTo(newActiveIndex, 0, false);
 };
 
-var removeSlide = function (slidesIndexes) {
-  var swiper = this;
-  var params = swiper.params;
-  var $wrapperEl = swiper.$wrapperEl;
-  var activeIndex = swiper.activeIndex;
-
-  if (params.loop) {
-    swiper.loopDestroy();
-    swiper.slides = $wrapperEl.children(("." + (params.slideClass)));
-  }
-  var newActiveIndex = activeIndex;
-  var indexToRemove;
-
-  if (typeof slidesIndexes === 'object' && 'length' in slidesIndexes) {
-    for (var i = 0; i < slidesIndexes.length; i += 1) {
-      indexToRemove = slidesIndexes[i];
-      if (swiper.slides[indexToRemove]) { swiper.slides.eq(indexToRemove).remove(); }
-      if (indexToRemove < newActiveIndex) { newActiveIndex -= 1; }
-    }
-    newActiveIndex = Math.max(newActiveIndex, 0);
-  } else {
-    indexToRemove = slidesIndexes;
-    if (swiper.slides[indexToRemove]) { swiper.slides.eq(indexToRemove).remove(); }
-    if (indexToRemove < newActiveIndex) { newActiveIndex -= 1; }
-    newActiveIndex = Math.max(newActiveIndex, 0);
-  }
-
-  if (params.loop) {
-    swiper.loopCreate();
-  }
-
-  if (!(params.observer && Support.observer)) {
-    swiper.update();
-  }
-  if (params.loop) {
-    swiper.slideTo(newActiveIndex + swiper.loopedSlides, 0, false);
-  } else {
-    swiper.slideTo(newActiveIndex, 0, false);
-  }
-};
-
-var removeAllSlides = function () {
-  var swiper = this;
-
-  var slidesIndexes = [];
-  for (var i = 0; i < swiper.slides.length; i += 1) {
-    slidesIndexes.push(i);
-  }
-  swiper.removeSlide(slidesIndexes);
-};
-
 var manipulation = {
   appendSlide: appendSlide,
   prependSlide: prependSlide,
-  removeSlide: removeSlide,
-  removeAllSlides: removeAllSlides,
 };
 
 var Device = (function Device() {
@@ -2297,13 +2120,6 @@ var onTouchStart = function (event) {
   data.isTouchEvent = e.type === 'touchstart';
   if (!data.isTouchEvent && 'which' in e && e.which === 3) { return; }
   if (data.isTouched && data.isMoved) { return; }
-  if (params.noSwiping && $$1(e.target).closest(params.noSwipingSelector ? params.noSwipingSelector : ("." + (params.noSwipingClass)))[0]) {
-    swiper.allowClick = true;
-    return;
-  }
-  if (params.swipeHandler) {
-    if (!$$1(e).closest(params.swipeHandler)[0]) { return; }
-  }
 
   touches.currentX = e.type === 'touchstart' ? e.targetTouches[0].pageX : e.pageX;
   touches.currentY = e.type === 'touchstart' ? e.targetTouches[0].pageY : e.pageY;
@@ -2336,7 +2152,6 @@ var onTouchStart = function (event) {
   swiper.allowClick = true;
   swiper.updateSize();
   swiper.swipeDirection = undefined;
-  if (params.threshold > 0) { data.allowThresholdMove = false; }
   if (e.type !== 'touchstart') {
     var preventDefault = true;
     if ($$1(e.target).is(data.formElements)) { preventDefault = false; }
@@ -2500,32 +2315,6 @@ var onTouchMove = function (event) {
     e.preventedByNestedSwiper = true;
   }
 
-  // Directions locks
-  if (!swiper.allowSlideNext && swiper.swipeDirection === 'next' && data.currentTranslate < data.startTranslate) {
-    data.currentTranslate = data.startTranslate;
-  }
-  if (!swiper.allowSlidePrev && swiper.swipeDirection === 'prev' && data.currentTranslate > data.startTranslate) {
-    data.currentTranslate = data.startTranslate;
-  }
-
-
-  // Threshold
-  if (params.threshold > 0) {
-    if (Math.abs(diff) > params.threshold || data.allowThresholdMove) {
-      if (!data.allowThresholdMove) {
-        data.allowThresholdMove = true;
-        touches.startX = touches.currentX;
-        touches.startY = touches.currentY;
-        data.currentTranslate = data.startTranslate;
-        touches.diff = swiper.isHorizontal() ? touches.currentX - touches.startX : touches.currentY - touches.startY;
-        return;
-      }
-    } else {
-      data.currentTranslate = data.startTranslate;
-      return;
-    }
-  }
-
   if (!params.followFinger) { return; }
 
   // Update active index in free mode
@@ -2637,11 +2426,6 @@ var onTouchEnd = function (event) {
       else { swiper.slideTo(stopIndex); }
     }
   } else {
-    // Short swipes
-    if (!params.shortSwipes) {
-      swiper.slideTo(swiper.activeIndex);
-      return;
-    }
     if (swiper.swipeDirection === 'next') {
       swiper.slideTo(stopIndex + params.slidesPerGroup);
     }
@@ -2659,14 +2443,6 @@ var onResize = function () {
 
   if (el && el.offsetWidth === 0) { return; }
 
-  // Save locks
-  var allowSlideNext = swiper.allowSlideNext;
-  var allowSlidePrev = swiper.allowSlidePrev;
-
-  // Disable locks on resize
-  swiper.allowSlideNext = true;
-  swiper.allowSlidePrev = true;
-
   swiper.updateSize();
   swiper.updateSlides();
 
@@ -2676,9 +2452,6 @@ var onResize = function () {
   } else {
     swiper.slideTo(swiper.activeIndex, 0, false, true);
   }
-  // Return locks after resize
-  swiper.allowSlidePrev = allowSlidePrev;
-  swiper.allowSlideNext = allowSlideNext;
 };
 
 var onClick = function (e) {
@@ -2953,13 +2726,11 @@ var defaults = {
   touchRatio: 1,
   touchAngle: 45,
   simulateTouch: true,
-  shortSwipes: true,
   longSwipes: true,
   longSwipesRatio: 0.5,
   longSwipesMs: 300,
   followFinger: true,
   allowTouchMove: true,
-  threshold: 0,
   touchMoveStopPropagation: true,
   touchReleaseOnEdges: false,
 
@@ -2987,14 +2758,6 @@ var defaults = {
   loopAdditionalSlides: 0,
   loopedSlides: null,
   loopFillGroupWithBlank: false,
-
-  // Swiping/no swiping
-  allowSlidePrev: true,
-  allowSlideNext: true,
-  swipeHandler: null, // '.swipe-handler',
-  noSwiping: true,
-  noSwipingClass: 'swiper-no-swiping',
-  noSwipingSelector: null,
 
   // Passive Listeners
   passiveListeners: true,
@@ -3160,10 +2923,6 @@ var Swiper$1 = (function (SwiperClass$$1) {
       progress: 0,
       velocity: 0,
       animating: false,
-
-      // Locks
-      allowSlideNext: swiper.params.allowSlideNext,
-      allowSlidePrev: swiper.params.allowSlidePrev,
 
       // Touch Events
       touchEvents: (function touchEvents() {
@@ -3564,498 +3323,6 @@ var Observer$1 = {
   },
 };
 
-var Virtual = {
-  update: function update(force) {
-    var swiper = this;
-    var ref = swiper.params;
-    var slidesPerView = ref.slidesPerView;
-    var slidesPerGroup = ref.slidesPerGroup;
-    var centeredSlides = ref.centeredSlides;
-    var ref$1 = swiper.virtual;
-    var previousFrom = ref$1.from;
-    var previousTo = ref$1.to;
-    var slides = ref$1.slides;
-    var previousSlidesGrid = ref$1.slidesGrid;
-    var renderSlide = ref$1.renderSlide;
-    var previousOffset = ref$1.offset;
-    swiper.updateActiveIndex();
-    var activeIndex = swiper.activeIndex || 0;
-
-    var offsetProp;
-    if (swiper.rtl && swiper.isHorizontal()) { offsetProp = 'right'; }
-    else { offsetProp = swiper.isHorizontal() ? 'left' : 'top'; }
-
-    var slidesAfter;
-    var slidesBefore;
-    if (centeredSlides) {
-      slidesAfter = Math.floor(slidesPerView / 2) + slidesPerGroup;
-      slidesBefore = Math.floor(slidesPerView / 2) + slidesPerGroup;
-    } else {
-      slidesAfter = slidesPerView + (slidesPerGroup - 1);
-      slidesBefore = slidesPerGroup;
-    }
-    var from = Math.max((activeIndex || 0) - slidesBefore, 0);
-    var to = Math.min((activeIndex || 0) + slidesAfter, slides.length - 1);
-    var offset = (swiper.slidesGrid[from] || 0) - (swiper.slidesGrid[0] || 0);
-
-    Utils.extend(swiper.virtual, {
-      from: from,
-      to: to,
-      offset: offset,
-      slidesGrid: swiper.slidesGrid,
-    });
-
-    function onRendered() {
-      swiper.updateSlides();
-      swiper.updateProgress();
-      swiper.updateSlidesClasses();
-      if (swiper.lazy && swiper.params.lazy.enabled) {
-        swiper.lazy.load();
-      }
-    }
-
-    if (previousFrom === from && previousTo === to && !force) {
-      if (swiper.slidesGrid !== previousSlidesGrid && offset !== previousOffset) {
-        swiper.slides.css(offsetProp, (offset + "px"));
-      }
-      swiper.updateProgress();
-      return;
-    }
-    if (swiper.params.virtual.renderExternal) {
-      swiper.params.virtual.renderExternal.call(swiper, {
-        offset: offset,
-        from: from,
-        to: to,
-        slides: (function getSlides() {
-          var slidesToRender = [];
-          for (var i = from; i <= to; i += 1) {
-            slidesToRender.push(slides[i]);
-          }
-          return slidesToRender;
-        }()),
-      });
-      onRendered();
-      return;
-    }
-    var prependIndexes = [];
-    var appendIndexes = [];
-    if (force) {
-      swiper.$wrapperEl.find(("." + (swiper.params.slideClass))).remove();
-    } else {
-      for (var i = previousFrom; i <= previousTo; i += 1) {
-        if (i < from || i > to) {
-          swiper.$wrapperEl.find(("." + (swiper.params.slideClass) + "[data-swiper-slide-index=\"" + i + "\"]")).remove();
-        }
-      }
-    }
-    for (var i$1 = 0; i$1 < slides.length; i$1 += 1) {
-      if (i$1 >= from && i$1 <= to) {
-        if (typeof previousTo === 'undefined' || force) {
-          appendIndexes.push(i$1);
-        } else {
-          if (i$1 > previousTo) { appendIndexes.push(i$1); }
-          if (i$1 < previousFrom) { prependIndexes.push(i$1); }
-        }
-      }
-    }
-    appendIndexes.forEach(function (index) {
-      swiper.$wrapperEl.append(renderSlide(slides[index], index));
-    });
-    prependIndexes.sort(function (a, b) { return a < b; }).forEach(function (index) {
-      swiper.$wrapperEl.prepend(renderSlide(slides[index], index));
-    });
-    swiper.$wrapperEl.children('.swiper-slide').css(offsetProp, (offset + "px"));
-    onRendered();
-  },
-  renderSlide: function renderSlide(slide, index) {
-    var swiper = this;
-    var params = swiper.params.virtual;
-    if (params.cache && swiper.virtual.cache[index]) {
-      return swiper.virtual.cache[index];
-    }
-    var $slideEl = params.renderSlide
-      ? $$1(params.renderSlide.call(swiper, slide, index))
-      : $$1(("<div class=\"" + (swiper.params.slideClass) + "\" data-swiper-slide-index=\"" + index + "\">" + slide + "</div>"));
-    if (!$slideEl.attr('data-swiper-slide-index')) { $slideEl.attr('data-swiper-slide-index', index); }
-    if (params.cache) { swiper.virtual.cache[index] = $slideEl; }
-    return $slideEl;
-  },
-  appendSlide: function appendSlide(slide) {
-    var swiper = this;
-    swiper.virtual.slides.push(slide);
-    swiper.virtual.update(true);
-  },
-  prependSlide: function prependSlide(slide) {
-    var swiper = this;
-    swiper.virtual.slides.unshift(slide);
-    if (swiper.params.virtual.cache) {
-      var cache = swiper.virtual.cache;
-      var newCache = {};
-      Object.keys(cache).forEach(function (cachedIndex) {
-        newCache[cachedIndex + 1] = cache[cachedIndex];
-      });
-      swiper.virtual.cache = newCache;
-    }
-    swiper.virtual.update(true);
-    swiper.slideNext(0);
-  },
-};
-
-var Virtual$1 = {
-  name: 'virtual',
-  params: {
-    virtual: {
-      enabled: false,
-      slides: [],
-      cache: true,
-      renderSlide: null,
-      renderExternal: null,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      virtual: {
-        update: Virtual.update.bind(swiper),
-        appendSlide: Virtual.appendSlide.bind(swiper),
-        prependSlide: Virtual.prependSlide.bind(swiper),
-        renderSlide: Virtual.renderSlide.bind(swiper),
-        slides: swiper.params.virtual.slides,
-        cache: {},
-      },
-    });
-  },
-  on: {
-    beforeInit: function beforeInit() {
-      var swiper = this;
-      if (!swiper.params.virtual.enabled) { return; }
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "virtual"));
-      var overwriteParams = {
-        watchSlidesProgress: true,
-      };
-      Utils.extend(swiper.params, overwriteParams);
-      Utils.extend(swiper.originalParams, overwriteParams);
-
-      swiper.virtual.update();
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      if (!swiper.params.virtual.enabled) { return; }
-      swiper.virtual.update();
-    },
-  },
-};
-
-var Keyboard = {
-  handle: function handle(event) {
-    var swiper = this;
-    var e = event;
-    if (e.originalEvent) { e = e.originalEvent; } // jquery fix
-    var kc = e.keyCode || e.charCode;
-    // Directions locks
-    if (!swiper.allowSlideNext && ((swiper.isHorizontal() && kc === 39) || (swiper.isVertical() && kc === 40))) {
-      return false;
-    }
-    if (!swiper.allowSlidePrev && ((swiper.isHorizontal() && kc === 37) || (swiper.isVertical() && kc === 38))) {
-      return false;
-    }
-    if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) {
-      return undefined;
-    }
-    if (doc.activeElement && doc.activeElement.nodeName && (doc.activeElement.nodeName.toLowerCase() === 'input' || doc.activeElement.nodeName.toLowerCase() === 'textarea')) {
-      return undefined;
-    }
-    if (swiper.params.keyboard.onlyInViewport && (kc === 37 || kc === 39 || kc === 38 || kc === 40)) {
-      var inView = false;
-      // Check that swiper should be inside of visible area of window
-      if (swiper.$el.parents(("." + (swiper.params.slideClass))).length > 0 && swiper.$el.parents(("." + (swiper.params.slideActiveClass))).length === 0) {
-        return undefined;
-      }
-      var windowWidth = win.innerWidth;
-      var windowHeight = win.innerHeight;
-      var swiperOffset = swiper.$el.offset();
-      if (swiper.rtl) { swiperOffset.left -= swiper.$el[0].scrollLeft; }
-      var swiperCoord = [
-        [swiperOffset.left, swiperOffset.top],
-        [swiperOffset.left + swiper.width, swiperOffset.top],
-        [swiperOffset.left, swiperOffset.top + swiper.height],
-        [swiperOffset.left + swiper.width, swiperOffset.top + swiper.height] ];
-      for (var i = 0; i < swiperCoord.length; i += 1) {
-        var point = swiperCoord[i];
-        if (
-          point[0] >= 0 && point[0] <= windowWidth &&
-          point[1] >= 0 && point[1] <= windowHeight
-        ) {
-          inView = true;
-        }
-      }
-      if (!inView) { return undefined; }
-    }
-    if (swiper.isHorizontal()) {
-      if (kc === 37 || kc === 39) {
-        if (e.preventDefault) { e.preventDefault(); }
-        else { e.returnValue = false; }
-      }
-      if ((kc === 39 && !swiper.rtl) || (kc === 37 && swiper.rtl)) { swiper.slideNext(); }
-      if ((kc === 37 && !swiper.rtl) || (kc === 39 && swiper.rtl)) { swiper.slidePrev(); }
-    } else {
-      if (kc === 38 || kc === 40) {
-        if (e.preventDefault) { e.preventDefault(); }
-        else { e.returnValue = false; }
-      }
-      if (kc === 40) { swiper.slideNext(); }
-      if (kc === 38) { swiper.slidePrev(); }
-    }
-    swiper.emit('keyPress', kc);
-    return undefined;
-  },
-  enable: function enable() {
-    var swiper = this;
-    if (swiper.keyboard.enabled) { return; }
-    $$1(doc).on('keydown', swiper.keyboard.handle);
-    swiper.keyboard.enabled = true;
-  },
-  disable: function disable() {
-    var swiper = this;
-    if (!swiper.keyboard.enabled) { return; }
-    $$1(doc).off('keydown', swiper.keyboard.handle);
-    swiper.keyboard.enabled = false;
-  },
-};
-
-var Keyboard$1 = {
-  name: 'keyboard',
-  params: {
-    keyboard: {
-      enabled: false,
-      onlyInViewport: true,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      keyboard: {
-        enabled: false,
-        enable: Keyboard.enable.bind(swiper),
-        disable: Keyboard.disable.bind(swiper),
-        handle: Keyboard.handle.bind(swiper),
-      },
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      if (swiper.params.keyboard.enabled) {
-        swiper.keyboard.enable();
-      }
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      if (swiper.keyboard.enabled) {
-        swiper.keyboard.disable();
-      }
-    },
-  },
-};
-
-function isEventSupported() {
-  var eventName = 'onwheel';
-  var isSupported = eventName in doc;
-
-  if (!isSupported) {
-    var element = doc.createElement('div');
-    element.setAttribute(eventName, 'return;');
-    isSupported = typeof element[eventName] === 'function';
-  }
-
-  if (!isSupported &&
-    doc.implementation &&
-    doc.implementation.hasFeature &&
-    // always returns true in newer browsers as per the standard.
-    // @see http://dom.spec.whatwg.org/#dom-domimplementation-hasfeature
-    doc.implementation.hasFeature('', '') !== true
-  ) {
-    // This is the only way to test support for the `wheel` event in IE9+.
-    isSupported = doc.implementation.hasFeature('Events.wheel', '3.0');
-  }
-
-  return isSupported;
-}
-var Mousewheel = {
-  lastScrollTime: Utils.now(),
-  event: (function getEvent() {
-    if (win.navigator.userAgent.indexOf('firefox') > -1) { return 'DOMMouseScroll'; }
-    return isEventSupported() ? 'wheel' : 'mousewheel';
-  }()),
-  normalize: function normalize(e) {
-    // Reasonable defaults
-    var PIXEL_STEP = 10;
-    var LINE_HEIGHT = 40;
-    var PAGE_HEIGHT = 800;
-
-    var sX = 0;
-    var sY = 0; // spinX, spinY
-    var pX = 0;
-    var pY = 0; // pixelX, pixelY
-
-    // Legacy
-    if ('detail' in e) {
-      sY = e.detail;
-    }
-    if ('wheelDelta' in e) {
-      sY = -e.wheelDelta / 120;
-    }
-    if ('wheelDeltaY' in e) {
-      sY = -e.wheelDeltaY / 120;
-    }
-    if ('wheelDeltaX' in e) {
-      sX = -e.wheelDeltaX / 120;
-    }
-
-    // side scrolling on FF with DOMMouseScroll
-    if ('axis' in e && e.axis === e.HORIZONTAL_AXIS) {
-      sX = sY;
-      sY = 0;
-    }
-
-    pX = sX * PIXEL_STEP;
-    pY = sY * PIXEL_STEP;
-
-    if ('deltaY' in e) {
-      pY = e.deltaY;
-    }
-    if ('deltaX' in e) {
-      pX = e.deltaX;
-    }
-
-    if ((pX || pY) && e.deltaMode) {
-      if (e.deltaMode === 1) { // delta in LINE units
-        pX *= LINE_HEIGHT;
-        pY *= LINE_HEIGHT;
-      } else { // delta in PAGE units
-        pX *= PAGE_HEIGHT;
-        pY *= PAGE_HEIGHT;
-      }
-    }
-
-    // Fall-back if spin cannot be determined
-    if (pX && !sX) {
-      sX = (pX < 1) ? -1 : 1;
-    }
-    if (pY && !sY) {
-      sY = (pY < 1) ? -1 : 1;
-    }
-
-    return {
-      spinX: sX,
-      spinY: sY,
-      pixelX: pX,
-      pixelY: pY,
-    };
-  },
-  handle: function handle(event) {
-    var e = event;
-    var swiper = this;
-    var params = swiper.params.mousewheel;
-    if (e.originalEvent) { e = e.originalEvent; } // jquery fix
-    var delta = 0;
-    var rtlFactor = swiper.rtl ? -1 : 1;
-
-    var data = Mousewheel.normalize(e);
-
-    if (params.forceToAxis) {
-      if (swiper.isHorizontal()) {
-        if (Math.abs(data.pixelX) > Math.abs(data.pixelY)) { delta = data.pixelX * rtlFactor; }
-        else { return true; }
-      } else if (Math.abs(data.pixelY) > Math.abs(data.pixelX)) { delta = data.pixelY; }
-      else { return true; }
-    } else {
-      delta = Math.abs(data.pixelX) > Math.abs(data.pixelY) ? -data.pixelX * rtlFactor : -data.pixelY;
-    }
-
-    if (delta === 0) { return true; }
-
-    if (params.invert) { delta = -delta; }
-
-    if (Utils.now() - swiper.mousewheel.lastScrollTime > 60) {
-      if (delta < 0) {
-        if ((!swiper.isEnd || swiper.params.loop) && !swiper.animating) {
-          swiper.slideNext();
-          swiper.emit('scroll', e);
-        } else if (params.releaseOnEdges) { return true; }
-      } else if ((!swiper.isBeginning || swiper.params.loop) && !swiper.animating) {
-        swiper.slidePrev();
-        swiper.emit('scroll', e);
-      } else if (params.releaseOnEdges) { return true; }
-    }
-    swiper.mousewheel.lastScrollTime = (new win.Date()).getTime();
-
-    if (e.preventDefault) { e.preventDefault(); }
-    else { e.returnValue = false; }
-    return false;
-  },
-  enable: function enable() {
-    var swiper = this;
-    if (!Mousewheel.event) { return false; }
-    if (swiper.mousewheel.enabled) { return false; }
-    var target = swiper.$el;
-    if (swiper.params.mousewheel.eventsTarged !== 'container') {
-      target = $$1(swiper.params.mousewheel.eventsTarged);
-    }
-    target.on(Mousewheel.event, swiper.mousewheel.handle);
-    swiper.mousewheel.enabled = true;
-    return true;
-  },
-  disable: function disable() {
-    var swiper = this;
-    if (!Mousewheel.event) { return false; }
-    if (!swiper.mousewheel.enabled) { return false; }
-    var target = swiper.$el;
-    if (swiper.params.mousewheel.eventsTarged !== 'container') {
-      target = $$1(swiper.params.mousewheel.eventsTarged);
-    }
-    target.off(Mousewheel.event, swiper.mousewheel.handle);
-    swiper.mousewheel.enabled = false;
-    return true;
-  },
-};
-
-var Mousewheel$1 = {
-  name: 'mousewheel',
-  params: {
-    mousewheel: {
-      enabled: false,
-      releaseOnEdges: false,
-      invert: false,
-      forceToAxis: false,
-      sensitivity: 1,
-      eventsTarged: 'container',
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      mousewheel: {
-        enabled: false,
-        enable: Mousewheel.enable.bind(swiper),
-        disable: Mousewheel.disable.bind(swiper),
-        handle: Mousewheel.handle.bind(swiper),
-        lastScrollTime: Utils.now(),
-      },
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      if (swiper.params.mousewheel.enabled) { swiper.mousewheel.enable(); }
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      if (swiper.mousewheel.enabled) { swiper.mousewheel.disable(); }
-    },
-  },
-};
-
 var Navigation = {
   update: function update() {
     // Update Navigation Buttons
@@ -4217,7 +3484,7 @@ var Pagination = {
     var rtl = swiper.rtl;
     var params = swiper.params.pagination;
     if (!params.el || !swiper.pagination.el || !swiper.pagination.$el || swiper.pagination.$el.length === 0) { return; }
-    var slidesLength = swiper.virtual && swiper.params.virtual.enabled ? swiper.virtual.slides.length : swiper.slides.length;
+    var slidesLength = swiper.slides.length;
     var $el = swiper.pagination.$el;
     // Current/Total
     var current;
@@ -4337,7 +3604,7 @@ var Pagination = {
     var swiper = this;
     var params = swiper.params.pagination;
     if (!params.el || !swiper.pagination.el || !swiper.pagination.$el || swiper.pagination.$el.length === 0) { return; }
-    var slidesLength = swiper.virtual && swiper.params.virtual.enabled ? swiper.virtual.slides.length : swiper.slides.length;
+    var slidesLength = swiper.slides.length;
 
     var $el = swiper.pagination.$el;
     var paginationHTML = '';
@@ -4527,863 +3794,6 @@ var Pagination$1 = {
   },
 };
 
-var Scrollbar = {
-  setTranslate: function setTranslate() {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el || !swiper.scrollbar.el) { return; }
-    var scrollbar = swiper.scrollbar;
-    var rtl = swiper.rtl;
-    var progress = swiper.progress;
-    var dragSize = scrollbar.dragSize;
-    var trackSize = scrollbar.trackSize;
-    var $dragEl = scrollbar.$dragEl;
-    var $el = scrollbar.$el;
-    var params = swiper.params.scrollbar;
-
-    var newSize = dragSize;
-    var newPos = (trackSize - dragSize) * progress;
-    if (rtl && swiper.isHorizontal()) {
-      newPos = -newPos;
-      if (newPos > 0) {
-        newSize = dragSize - newPos;
-        newPos = 0;
-      } else if (-newPos + dragSize > trackSize) {
-        newSize = trackSize + newPos;
-      }
-    } else if (newPos < 0) {
-      newSize = dragSize + newPos;
-      newPos = 0;
-    } else if (newPos + dragSize > trackSize) {
-      newSize = trackSize - newPos;
-    }
-    if (swiper.isHorizontal()) {
-      if (Support.transforms3d) {
-        $dragEl.transform(("translate3d(" + newPos + "px, 0, 0)"));
-      } else {
-        $dragEl.transform(("translateX(" + newPos + "px)"));
-      }
-      $dragEl[0].style.width = newSize + "px";
-    } else {
-      if (Support.transforms3d) {
-        $dragEl.transform(("translate3d(0px, " + newPos + "px, 0)"));
-      } else {
-        $dragEl.transform(("translateY(" + newPos + "px)"));
-      }
-      $dragEl[0].style.height = newSize + "px";
-    }
-    if (params.hide) {
-      clearTimeout(swiper.scrollbar.timeout);
-      $el[0].style.opacity = 1;
-      swiper.scrollbar.timeout = setTimeout(function () {
-        $el[0].style.opacity = 0;
-        $el.transition(400);
-      }, 1000);
-    }
-  },
-  setTransition: function setTransition(duration) {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el || !swiper.scrollbar.el) { return; }
-    swiper.scrollbar.$dragEl.transition(duration);
-  },
-  updateSize: function updateSize() {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el || !swiper.scrollbar.el) { return; }
-
-    var scrollbar = swiper.scrollbar;
-    var $dragEl = scrollbar.$dragEl;
-    var $el = scrollbar.$el;
-
-    $dragEl[0].style.width = '';
-    $dragEl[0].style.height = '';
-    var trackSize = swiper.isHorizontal() ? $el[0].offsetWidth : $el[0].offsetHeight;
-
-    var divider = swiper.size / swiper.virtualSize;
-    var moveDivider = divider * (trackSize / swiper.size);
-    var dragSize;
-    if (swiper.params.scrollbar.dragSize === 'auto') {
-      dragSize = trackSize * divider;
-    } else {
-      dragSize = parseInt(swiper.params.scrollbar.dragSize, 10);
-    }
-
-    if (swiper.isHorizontal()) {
-      $dragEl[0].style.width = dragSize + "px";
-    } else {
-      $dragEl[0].style.height = dragSize + "px";
-    }
-
-    if (divider >= 1) {
-      $el[0].style.display = 'none';
-    } else {
-      $el[0].style.display = '';
-    }
-    if (swiper.params.scrollbarHide) {
-      $el[0].style.opacity = 0;
-    }
-    Utils.extend(scrollbar, {
-      trackSize: trackSize,
-      divider: divider,
-      moveDivider: moveDivider,
-      dragSize: dragSize,
-    });
-    scrollbar.$el[swiper.params.watchOverflow && swiper.isLocked ? 'addClass' : 'removeClass'](swiper.params.scrollbar.lockClass);
-  },
-  setDragPosition: function setDragPosition(e) {
-    var swiper = this;
-    var scrollbar = swiper.scrollbar;
-    var $el = scrollbar.$el;
-    var dragSize = scrollbar.dragSize;
-    var trackSize = scrollbar.trackSize;
-
-    var pointerPosition;
-    if (swiper.isHorizontal()) {
-      pointerPosition = ((e.type === 'touchstart' || e.type === 'touchmove') ? e.targetTouches[0].pageX : e.pageX || e.clientX);
-    } else {
-      pointerPosition = ((e.type === 'touchstart' || e.type === 'touchmove') ? e.targetTouches[0].pageY : e.pageY || e.clientY);
-    }
-    var positionRatio;
-    positionRatio = ((pointerPosition) - $el.offset()[swiper.isHorizontal() ? 'left' : 'top'] - (dragSize / 2)) / (trackSize - dragSize);
-    positionRatio = Math.max(Math.min(positionRatio, 1), 0);
-    if (swiper.rtl) {
-      positionRatio = 1 - positionRatio;
-    }
-
-    var position = swiper.minTranslate() + ((swiper.maxTranslate() - swiper.minTranslate()) * positionRatio);
-
-    swiper.updateProgress(position);
-    swiper.setTranslate(position);
-    swiper.updateActiveIndex();
-    swiper.updateSlidesClasses();
-  },
-  onDragStart: function onDragStart(e) {
-    var swiper = this;
-    var params = swiper.params.scrollbar;
-    var scrollbar = swiper.scrollbar;
-    var $wrapperEl = swiper.$wrapperEl;
-    var $el = scrollbar.$el;
-    var $dragEl = scrollbar.$dragEl;
-    swiper.scrollbar.isTouched = true;
-    e.preventDefault();
-    e.stopPropagation();
-
-    $wrapperEl.transition(100);
-    $dragEl.transition(100);
-    scrollbar.setDragPosition(e);
-
-    clearTimeout(swiper.scrollbar.dragTimeout);
-
-    $el.transition(0);
-    if (params.hide) {
-      $el.css('opacity', 1);
-    }
-    swiper.emit('scrollbarDragStart', e);
-  },
-  onDragMove: function onDragMove(e) {
-    var swiper = this;
-    var scrollbar = swiper.scrollbar;
-    var $wrapperEl = swiper.$wrapperEl;
-    var $el = scrollbar.$el;
-    var $dragEl = scrollbar.$dragEl;
-
-    if (!swiper.scrollbar.isTouched) { return; }
-    if (e.preventDefault) { e.preventDefault(); }
-    else { e.returnValue = false; }
-    scrollbar.setDragPosition(e);
-    $wrapperEl.transition(0);
-    $el.transition(0);
-    $dragEl.transition(0);
-    swiper.emit('scrollbarDragMove', e);
-  },
-  onDragEnd: function onDragEnd(e) {
-    var swiper = this;
-
-    var params = swiper.params.scrollbar;
-    var scrollbar = swiper.scrollbar;
-    var $el = scrollbar.$el;
-
-    if (!swiper.scrollbar.isTouched) { return; }
-    swiper.scrollbar.isTouched = false;
-    if (params.hide) {
-      clearTimeout(swiper.scrollbar.dragTimeout);
-      swiper.scrollbar.dragTimeout = Utils.nextTick(function () {
-        $el.css('opacity', 0);
-        $el.transition(400);
-      }, 1000);
-    }
-    swiper.emit('scrollbarDragEnd', e);
-    if (params.snapOnRelease) {
-      swiper.slideReset();
-    }
-  },
-  enableDraggable: function enableDraggable() {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el) { return; }
-    var scrollbar = swiper.scrollbar;
-    var touchEvents = swiper.touchEvents;
-    var touchEventsDesktop = swiper.touchEventsDesktop;
-    var params = swiper.params;
-    var $el = scrollbar.$el;
-    var target = $el[0];
-    var activeListener = Support.passiveListener && params.passiveListener ? { passive: false, capture: false } : false;
-    var passiveListener = Support.passiveListener && params.passiveListener ? { passive: true, capture: false } : false;
-    if (!Support.touch && (Support.pointerEvents || Support.prefixedPointerEvents)) {
-      target.addEventListener(touchEventsDesktop.start, swiper.scrollbar.onDragStart, activeListener);
-      doc.addEventListener(touchEventsDesktop.move, swiper.scrollbar.onDragMove, activeListener);
-      doc.addEventListener(touchEventsDesktop.end, swiper.scrollbar.onDragEnd, passiveListener);
-    } else {
-      if (Support.touch) {
-        target.addEventListener(touchEvents.start, swiper.scrollbar.onDragStart, activeListener);
-        target.addEventListener(touchEvents.move, swiper.scrollbar.onDragMove, activeListener);
-        target.addEventListener(touchEvents.end, swiper.scrollbar.onDragEnd, passiveListener);
-      }
-      if ((params.simulateTouch && !Device.ios && !Device.android) || (params.simulateTouch && !Support.touch && Device.ios)) {
-        target.addEventListener('mousedown', swiper.scrollbar.onDragStart, activeListener);
-        doc.addEventListener('mousemove', swiper.scrollbar.onDragMove, activeListener);
-        doc.addEventListener('mouseup', swiper.scrollbar.onDragEnd, passiveListener);
-      }
-    }
-  },
-  disableDraggable: function disableDraggable() {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el) { return; }
-    var scrollbar = swiper.scrollbar;
-    var touchEvents = swiper.touchEvents;
-    var touchEventsDesktop = swiper.touchEventsDesktop;
-    var params = swiper.params;
-    var $el = scrollbar.$el;
-    var target = $el[0];
-    var activeListener = Support.passiveListener && params.passiveListener ? { passive: false, capture: false } : false;
-    var passiveListener = Support.passiveListener && params.passiveListener ? { passive: true, capture: false } : false;
-    if (!Support.touch && (Support.pointerEvents || Support.prefixedPointerEvents)) {
-      target.removeEventListener(touchEventsDesktop.start, swiper.scrollbar.onDragStart, activeListener);
-      doc.removeEventListener(touchEventsDesktop.move, swiper.scrollbar.onDragMove, activeListener);
-      doc.removeEventListener(touchEventsDesktop.end, swiper.scrollbar.onDragEnd, passiveListener);
-    } else {
-      if (Support.touch) {
-        target.removeEventListener(touchEvents.start, swiper.scrollbar.onDragStart, activeListener);
-        target.removeEventListener(touchEvents.move, swiper.scrollbar.onDragMove, activeListener);
-        target.removeEventListener(touchEvents.end, swiper.scrollbar.onDragEnd, passiveListener);
-      }
-      if ((params.simulateTouch && !Device.ios && !Device.android) || (params.simulateTouch && !Support.touch && Device.ios)) {
-        target.removeEventListener('mousedown', swiper.scrollbar.onDragStart, activeListener);
-        doc.removeEventListener('mousemove', swiper.scrollbar.onDragMove, activeListener);
-        doc.removeEventListener('mouseup', swiper.scrollbar.onDragEnd, passiveListener);
-      }
-    }
-  },
-  init: function init() {
-    var swiper = this;
-    if (!swiper.params.scrollbar.el) { return; }
-    var scrollbar = swiper.scrollbar;
-    var $swiperEl = swiper.$el;
-    var params = swiper.params.scrollbar;
-
-    var $el = $$1(params.el);
-    if (swiper.params.uniqueNavElements && typeof params.el === 'string' && $el.length > 1 && $swiperEl.find(params.el).length === 1) {
-      $el = $swiperEl.find(params.el);
-    }
-
-    var $dragEl = $el.find(("." + (swiper.params.scrollbar.dragClass)));
-    if ($dragEl.length === 0) {
-      $dragEl = $$1(("<div class=\"" + (swiper.params.scrollbar.dragClass) + "\"></div>"));
-      $el.append($dragEl);
-    }
-
-    Utils.extend(scrollbar, {
-      $el: $el,
-      el: $el[0],
-      $dragEl: $dragEl,
-      dragEl: $dragEl[0],
-    });
-
-    if (params.draggable) {
-      scrollbar.enableDraggable();
-    }
-  },
-  destroy: function destroy() {
-    var swiper = this;
-    swiper.scrollbar.disableDraggable();
-  },
-};
-
-var Scrollbar$1 = {
-  name: 'scrollbar',
-  params: {
-    scrollbar: {
-      el: null,
-      dragSize: 'auto',
-      hide: false,
-      draggable: false,
-      snapOnRelease: true,
-      lockClass: 'swiper-scrollbar-lock',
-      dragClass: 'swiper-scrollbar-drag',
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      scrollbar: {
-        init: Scrollbar.init.bind(swiper),
-        destroy: Scrollbar.destroy.bind(swiper),
-        updateSize: Scrollbar.updateSize.bind(swiper),
-        setTranslate: Scrollbar.setTranslate.bind(swiper),
-        setTransition: Scrollbar.setTransition.bind(swiper),
-        enableDraggable: Scrollbar.enableDraggable.bind(swiper),
-        disableDraggable: Scrollbar.disableDraggable.bind(swiper),
-        setDragPosition: Scrollbar.setDragPosition.bind(swiper),
-        onDragStart: Scrollbar.onDragStart.bind(swiper),
-        onDragMove: Scrollbar.onDragMove.bind(swiper),
-        onDragEnd: Scrollbar.onDragEnd.bind(swiper),
-        isTouched: false,
-        timeout: null,
-        dragTimeout: null,
-      },
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      swiper.scrollbar.init();
-      swiper.scrollbar.updateSize();
-      swiper.scrollbar.setTranslate();
-    },
-    update: function update() {
-      var swiper = this;
-      swiper.scrollbar.updateSize();
-    },
-    resize: function resize() {
-      var swiper = this;
-      swiper.scrollbar.updateSize();
-    },
-    observerUpdate: function observerUpdate() {
-      var swiper = this;
-      swiper.scrollbar.updateSize();
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      swiper.scrollbar.setTranslate();
-    },
-    setTransition: function setTransition(duration) {
-      var swiper = this;
-      swiper.scrollbar.setTransition(duration);
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      swiper.scrollbar.destroy();
-    },
-  },
-};
-
-var Zoom = {
-  // Calc Scale From Multi-touches
-  getDistanceBetweenTouches: function getDistanceBetweenTouches(e) {
-    if (e.targetTouches.length < 2) { return 1; }
-    var x1 = e.targetTouches[0].pageX;
-    var y1 = e.targetTouches[0].pageY;
-    var x2 = e.targetTouches[1].pageX;
-    var y2 = e.targetTouches[1].pageY;
-    var distance = Math.sqrt((Math.pow( (x2 - x1), 2 )) + (Math.pow( (y2 - y1), 2 )));
-    return distance;
-  },
-  // Events
-  onGestureStart: function onGestureStart(e) {
-    var swiper = this;
-    var params = swiper.params.zoom;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    zoom.fakeGestureTouched = false;
-    zoom.fakeGestureMoved = false;
-    if (!Support.gestures) {
-      if (e.type !== 'touchstart' || (e.type === 'touchstart' && e.targetTouches.length < 2)) {
-        return;
-      }
-      zoom.fakeGestureTouched = true;
-      gesture.scaleStart = Zoom.getDistanceBetweenTouches(e);
-    }
-    if (!gesture.$slideEl || !gesture.$slideEl.length) {
-      gesture.$slideEl = $$1(e.target).closest('.swiper-slide');
-      if (gesture.$slideEl.length === 0) { gesture.$slideEl = swiper.slides.eq(swiper.activeIndex); }
-      gesture.$imageEl = gesture.$slideEl.find('img, svg, canvas');
-      gesture.$imageWrapEl = gesture.$imageEl.parent(("." + (params.containerClass)));
-      gesture.maxRatio = gesture.$imageWrapEl.attr('data-swiper-zoom') || params.maxRatio;
-      if (gesture.$imageWrapEl.length === 0) {
-        gesture.$imageEl = undefined;
-        return;
-      }
-    }
-    gesture.$imageEl.transition(0);
-    swiper.zoom.isScaling = true;
-  },
-  onGestureChange: function onGestureChange(e) {
-    var swiper = this;
-    var params = swiper.params.zoom;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    if (!Support.gestures) {
-      if (e.type !== 'touchmove' || (e.type === 'touchmove' && e.targetTouches.length < 2)) {
-        return;
-      }
-      zoom.fakeGestureMoved = true;
-      gesture.scaleMove = Zoom.getDistanceBetweenTouches(e);
-    }
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-    if (Support.gestures) {
-      swiper.zoom.scale = e.scale * zoom.currentScale;
-    } else {
-      zoom.scale = (gesture.scaleMove / gesture.scaleStart) * zoom.currentScale;
-    }
-    if (zoom.scale > gesture.maxRatio) {
-      zoom.scale = (gesture.maxRatio - 1) + (Math.pow( ((zoom.scale - gesture.maxRatio) + 1), 0.5 ));
-    }
-    if (zoom.scale < params.minRatio) {
-      zoom.scale = (params.minRatio + 1) - (Math.pow( ((params.minRatio - zoom.scale) + 1), 0.5 ));
-    }
-    gesture.$imageEl.transform(("translate3d(0,0,0) scale(" + (zoom.scale) + ")"));
-  },
-  onGestureEnd: function onGestureEnd(e) {
-    var swiper = this;
-    var params = swiper.params.zoom;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    if (!Support.gestures) {
-      if (!zoom.fakeGestureTouched || !zoom.fakeGestureMoved) {
-        return;
-      }
-      if (e.type !== 'touchend' || (e.type === 'touchend' && e.changedTouches.length < 2 && !Device.android)) {
-        return;
-      }
-      zoom.fakeGestureTouched = false;
-      zoom.fakeGestureMoved = false;
-    }
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-    zoom.scale = Math.max(Math.min(zoom.scale, gesture.maxRatio), params.minRatio);
-    gesture.$imageEl.transition(swiper.params.speed).transform(("translate3d(0,0,0) scale(" + (zoom.scale) + ")"));
-    zoom.currentScale = zoom.scale;
-    zoom.isScaling = false;
-    if (zoom.scale === 1) { gesture.$slideEl = undefined; }
-  },
-  onTouchStart: function onTouchStart(e) {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    var image = zoom.image;
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-    if (image.isTouched) { return; }
-    if (Device.android) { e.preventDefault(); }
-    image.isTouched = true;
-    image.touchesStart.x = e.type === 'touchstart' ? e.targetTouches[0].pageX : e.pageX;
-    image.touchesStart.y = e.type === 'touchstart' ? e.targetTouches[0].pageY : e.pageY;
-  },
-  onTouchMove: function onTouchMove(e) {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    var image = zoom.image;
-    var velocity = zoom.velocity;
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-    swiper.allowClick = false;
-    if (!image.isTouched || !gesture.$slideEl) { return; }
-
-    if (!image.isMoved) {
-      image.width = gesture.$imageEl[0].offsetWidth;
-      image.height = gesture.$imageEl[0].offsetHeight;
-      image.startX = Utils.getTranslate(gesture.$imageWrapEl[0], 'x') || 0;
-      image.startY = Utils.getTranslate(gesture.$imageWrapEl[0], 'y') || 0;
-      gesture.slideWidth = gesture.$slideEl[0].offsetWidth;
-      gesture.slideHeight = gesture.$slideEl[0].offsetHeight;
-      gesture.$imageWrapEl.transition(0);
-      if (swiper.rtl) { image.startX = -image.startX; }
-      if (swiper.rtl) { image.startY = -image.startY; }
-    }
-    // Define if we need image drag
-    var scaledWidth = image.width * zoom.scale;
-    var scaledHeight = image.height * zoom.scale;
-
-    if (scaledWidth < gesture.slideWidth && scaledHeight < gesture.slideHeight) { return; }
-
-    image.minX = Math.min(((gesture.slideWidth / 2) - (scaledWidth / 2)), 0);
-    image.maxX = -image.minX;
-    image.minY = Math.min(((gesture.slideHeight / 2) - (scaledHeight / 2)), 0);
-    image.maxY = -image.minY;
-
-    image.touchesCurrent.x = e.type === 'touchmove' ? e.targetTouches[0].pageX : e.pageX;
-    image.touchesCurrent.y = e.type === 'touchmove' ? e.targetTouches[0].pageY : e.pageY;
-
-    if (!image.isMoved && !zoom.isScaling) {
-      if (
-        swiper.isHorizontal() &&
-        (
-          (Math.floor(image.minX) === Math.floor(image.startX) && image.touchesCurrent.x < image.touchesStart.x) ||
-          (Math.floor(image.maxX) === Math.floor(image.startX) && image.touchesCurrent.x > image.touchesStart.x)
-        )
-      ) {
-        image.isTouched = false;
-        return;
-      } else if (
-        !swiper.isHorizontal() &&
-        (
-          (Math.floor(image.minY) === Math.floor(image.startY) && image.touchesCurrent.y < image.touchesStart.y) ||
-          (Math.floor(image.maxY) === Math.floor(image.startY) && image.touchesCurrent.y > image.touchesStart.y)
-        )
-      ) {
-        image.isTouched = false;
-        return;
-      }
-    }
-    e.preventDefault();
-    e.stopPropagation();
-
-    image.isMoved = true;
-    image.currentX = (image.touchesCurrent.x - image.touchesStart.x) + image.startX;
-    image.currentY = (image.touchesCurrent.y - image.touchesStart.y) + image.startY;
-
-    if (image.currentX < image.minX) {
-      image.currentX = (image.minX + 1) - (Math.pow( ((image.minX - image.currentX) + 1), 0.8 ));
-    }
-    if (image.currentX > image.maxX) {
-      image.currentX = (image.maxX - 1) + (Math.pow( ((image.currentX - image.maxX) + 1), 0.8 ));
-    }
-
-    if (image.currentY < image.minY) {
-      image.currentY = (image.minY + 1) - (Math.pow( ((image.minY - image.currentY) + 1), 0.8 ));
-    }
-    if (image.currentY > image.maxY) {
-      image.currentY = (image.maxY - 1) + (Math.pow( ((image.currentY - image.maxY) + 1), 0.8 ));
-    }
-
-    // Velocity
-    if (!velocity.prevPositionX) { velocity.prevPositionX = image.touchesCurrent.x; }
-    if (!velocity.prevPositionY) { velocity.prevPositionY = image.touchesCurrent.y; }
-    if (!velocity.prevTime) { velocity.prevTime = Date.now(); }
-    velocity.x = (image.touchesCurrent.x - velocity.prevPositionX) / (Date.now() - velocity.prevTime) / 2;
-    velocity.y = (image.touchesCurrent.y - velocity.prevPositionY) / (Date.now() - velocity.prevTime) / 2;
-    if (Math.abs(image.touchesCurrent.x - velocity.prevPositionX) < 2) { velocity.x = 0; }
-    if (Math.abs(image.touchesCurrent.y - velocity.prevPositionY) < 2) { velocity.y = 0; }
-    velocity.prevPositionX = image.touchesCurrent.x;
-    velocity.prevPositionY = image.touchesCurrent.y;
-    velocity.prevTime = Date.now();
-
-    gesture.$imageWrapEl.transform(("translate3d(" + (image.currentX) + "px, " + (image.currentY) + "px,0)"));
-  },
-  onTouchEnd: function onTouchEnd() {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    var image = zoom.image;
-    var velocity = zoom.velocity;
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-    if (!image.isTouched || !image.isMoved) {
-      image.isTouched = false;
-      image.isMoved = false;
-      return;
-    }
-    image.isTouched = false;
-    image.isMoved = false;
-    var momentumDurationX = 300;
-    var momentumDurationY = 300;
-    var momentumDistanceX = velocity.x * momentumDurationX;
-    var newPositionX = image.currentX + momentumDistanceX;
-    var momentumDistanceY = velocity.y * momentumDurationY;
-    var newPositionY = image.currentY + momentumDistanceY;
-
-    // Fix duration
-    if (velocity.x !== 0) { momentumDurationX = Math.abs((newPositionX - image.currentX) / velocity.x); }
-    if (velocity.y !== 0) { momentumDurationY = Math.abs((newPositionY - image.currentY) / velocity.y); }
-    var momentumDuration = Math.max(momentumDurationX, momentumDurationY);
-
-    image.currentX = newPositionX;
-    image.currentY = newPositionY;
-
-    // Define if we need image drag
-    var scaledWidth = image.width * zoom.scale;
-    var scaledHeight = image.height * zoom.scale;
-    image.minX = Math.min(((gesture.slideWidth / 2) - (scaledWidth / 2)), 0);
-    image.maxX = -image.minX;
-    image.minY = Math.min(((gesture.slideHeight / 2) - (scaledHeight / 2)), 0);
-    image.maxY = -image.minY;
-    image.currentX = Math.max(Math.min(image.currentX, image.maxX), image.minX);
-    image.currentY = Math.max(Math.min(image.currentY, image.maxY), image.minY);
-
-    gesture.$imageWrapEl.transition(momentumDuration).transform(("translate3d(" + (image.currentX) + "px, " + (image.currentY) + "px,0)"));
-  },
-  onTransitionEnd: function onTransitionEnd() {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    var gesture = zoom.gesture;
-    if (gesture.$slideEl && swiper.previousIndex !== swiper.activeIndex) {
-      gesture.$imageEl.transform('translate3d(0,0,0) scale(1)');
-      gesture.$imageWrapEl.transform('translate3d(0,0,0)');
-      gesture.$slideEl = undefined;
-      gesture.$imageEl = undefined;
-      gesture.$imageWrapEl = undefined;
-
-      zoom.scale = 1;
-      zoom.currentScale = 1;
-    }
-  },
-  // Toggle Zoom
-  toggle: function toggle(e) {
-    var swiper = this;
-    var zoom = swiper.zoom;
-
-    if (zoom.scale && zoom.scale !== 1) {
-      // Zoom Out
-      zoom.out();
-    } else {
-      // Zoom In
-      zoom.in(e);
-    }
-  },
-  in: function in$1(e) {
-    var swiper = this;
-
-    var zoom = swiper.zoom;
-    var params = swiper.params.zoom;
-    var gesture = zoom.gesture;
-    var image = zoom.image;
-
-    if (!gesture.$slideEl) {
-      gesture.$slideEl = swiper.clickedSlide ? $$1(swiper.clickedSlide) : swiper.slides.eq(swiper.activeIndex);
-      gesture.$imageEl = gesture.$slideEl.find('img, svg, canvas');
-      gesture.$imageWrapEl = gesture.$imageEl.parent(("." + (params.containerClass)));
-    }
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-
-    gesture.$slideEl.addClass(("" + (params.zoomedSlideClass)));
-
-    var touchX;
-    var touchY;
-    var offsetX;
-    var offsetY;
-    var diffX;
-    var diffY;
-    var translateX;
-    var translateY;
-    var imageWidth;
-    var imageHeight;
-    var scaledWidth;
-    var scaledHeight;
-    var translateMinX;
-    var translateMinY;
-    var translateMaxX;
-    var translateMaxY;
-    var slideWidth;
-    var slideHeight;
-
-    if (typeof image.touchesStart.x === 'undefined' && e) {
-      touchX = e.type === 'touchend' ? e.changedTouches[0].pageX : e.pageX;
-      touchY = e.type === 'touchend' ? e.changedTouches[0].pageY : e.pageY;
-    } else {
-      touchX = image.touchesStart.x;
-      touchY = image.touchesStart.y;
-    }
-
-    zoom.scale = gesture.$imageWrapEl.attr('data-swiper-zoom') || params.maxRatio;
-    zoom.currentScale = gesture.$imageWrapEl.attr('data-swiper-zoom') || params.maxRatio;
-    if (e) {
-      slideWidth = gesture.$slideEl[0].offsetWidth;
-      slideHeight = gesture.$slideEl[0].offsetHeight;
-      offsetX = gesture.$slideEl.offset().left;
-      offsetY = gesture.$slideEl.offset().top;
-      diffX = (offsetX + (slideWidth / 2)) - touchX;
-      diffY = (offsetY + (slideHeight / 2)) - touchY;
-
-      imageWidth = gesture.$imageEl[0].offsetWidth;
-      imageHeight = gesture.$imageEl[0].offsetHeight;
-      scaledWidth = imageWidth * zoom.scale;
-      scaledHeight = imageHeight * zoom.scale;
-
-      translateMinX = Math.min(((slideWidth / 2) - (scaledWidth / 2)), 0);
-      translateMinY = Math.min(((slideHeight / 2) - (scaledHeight / 2)), 0);
-      translateMaxX = -translateMinX;
-      translateMaxY = -translateMinY;
-
-      translateX = diffX * zoom.scale;
-      translateY = diffY * zoom.scale;
-
-      if (translateX < translateMinX) {
-        translateX = translateMinX;
-      }
-      if (translateX > translateMaxX) {
-        translateX = translateMaxX;
-      }
-
-      if (translateY < translateMinY) {
-        translateY = translateMinY;
-      }
-      if (translateY > translateMaxY) {
-        translateY = translateMaxY;
-      }
-    } else {
-      translateX = 0;
-      translateY = 0;
-    }
-    gesture.$imageWrapEl.transition(300).transform(("translate3d(" + translateX + "px, " + translateY + "px,0)"));
-    gesture.$imageEl.transition(300).transform(("translate3d(0,0,0) scale(" + (zoom.scale) + ")"));
-  },
-  out: function out() {
-    var swiper = this;
-
-    var zoom = swiper.zoom;
-    var params = swiper.params.zoom;
-    var gesture = zoom.gesture;
-
-    if (!gesture.$slideEl) {
-      gesture.$slideEl = swiper.clickedSlide ? $$1(swiper.clickedSlide) : swiper.slides.eq(swiper.activeIndex);
-      gesture.$imageEl = gesture.$slideEl.find('img, svg, canvas');
-      gesture.$imageWrapEl = gesture.$imageEl.parent(("." + (params.containerClass)));
-    }
-    if (!gesture.$imageEl || gesture.$imageEl.length === 0) { return; }
-
-    zoom.scale = 1;
-    zoom.currentScale = 1;
-    gesture.$imageWrapEl.transition(300).transform('translate3d(0,0,0)');
-    gesture.$imageEl.transition(300).transform('translate3d(0,0,0) scale(1)');
-    gesture.$slideEl.removeClass(("" + (params.zoomedSlideClass)));
-    gesture.$slideEl = undefined;
-  },
-  // Attach/Detach Events
-  enable: function enable() {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    if (zoom.enabled) { return; }
-    zoom.enabled = true;
-
-    var passiveListener = swiper.touchEvents.start === 'touchstart' && Support.passiveListener && swiper.params.passiveListeners ? { passive: true, capture: false } : false;
-
-    // Scale image
-    if (Support.gestures) {
-      swiper.$wrapperEl.on('gesturestart', '.swiper-slide', zoom.onGestureStart, passiveListener);
-      swiper.$wrapperEl.on('gesturechange', '.swiper-slide', zoom.onGestureChange, passiveListener);
-      swiper.$wrapperEl.on('gestureend', '.swiper-slide', zoom.onGestureEnd, passiveListener);
-    } else if (swiper.touchEvents.start === 'touchstart') {
-      swiper.$wrapperEl.on(swiper.touchEvents.start, '.swiper-slide', zoom.onGestureStart, passiveListener);
-      swiper.$wrapperEl.on(swiper.touchEvents.move, '.swiper-slide', zoom.onGestureChange, passiveListener);
-      swiper.$wrapperEl.on(swiper.touchEvents.end, '.swiper-slide', zoom.onGestureEnd, passiveListener);
-    }
-
-    // Move image
-    swiper.$wrapperEl.on(swiper.touchEvents.move, ("." + (swiper.params.zoom.containerClass)), zoom.onTouchMove);
-  },
-  disable: function disable() {
-    var swiper = this;
-    var zoom = swiper.zoom;
-    if (!zoom.enabled) { return; }
-
-    swiper.zoom.enabled = false;
-
-    var passiveListener = swiper.touchEvents.start === 'touchstart' && Support.passiveListener && swiper.params.passiveListeners ? { passive: true, capture: false } : false;
-
-    // Scale image
-    if (Support.gestures) {
-      swiper.$wrapperEl.off('gesturestart', '.swiper-slide', zoom.onGestureStart, passiveListener);
-      swiper.$wrapperEl.off('gesturechange', '.swiper-slide', zoom.onGestureChange, passiveListener);
-      swiper.$wrapperEl.off('gestureend', '.swiper-slide', zoom.onGestureEnd, passiveListener);
-    } else if (swiper.touchEvents.start === 'touchstart') {
-      swiper.$wrapperEl.off(swiper.touchEvents.start, '.swiper-slide', zoom.onGestureStart, passiveListener);
-      swiper.$wrapperEl.off(swiper.touchEvents.move, '.swiper-slide', zoom.onGestureChange, passiveListener);
-      swiper.$wrapperEl.off(swiper.touchEvents.end, '.swiper-slide', zoom.onGestureEnd, passiveListener);
-    }
-
-    // Move image
-    swiper.$wrapperEl.off(swiper.touchEvents.move, ("." + (swiper.params.zoom.containerClass)), zoom.onTouchMove);
-  },
-};
-
-var Zoom$1 = {
-  name: 'zoom',
-  params: {
-    zoom: {
-      enabled: false,
-      maxRatio: 3,
-      minRatio: 1,
-      toggle: true,
-      containerClass: 'swiper-zoom-container',
-      zoomedSlideClass: 'swiper-slide-zoomed',
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    var zoom = {
-      enabled: false,
-      scale: 1,
-      currentScale: 1,
-      isScaling: false,
-      gesture: {
-        $slideEl: undefined,
-        slideWidth: undefined,
-        slideHeight: undefined,
-        $imageEl: undefined,
-        $imageWrapEl: undefined,
-        maxRatio: 3,
-      },
-      image: {
-        isTouched: undefined,
-        isMoved: undefined,
-        currentX: undefined,
-        currentY: undefined,
-        minX: undefined,
-        minY: undefined,
-        maxX: undefined,
-        maxY: undefined,
-        width: undefined,
-        height: undefined,
-        startX: undefined,
-        startY: undefined,
-        touchesStart: {},
-        touchesCurrent: {},
-      },
-      velocity: {
-        x: undefined,
-        y: undefined,
-        prevPositionX: undefined,
-        prevPositionY: undefined,
-        prevTime: undefined,
-      },
-    };
-    ('onGestureStart onGestureChange onGestureEnd onTouchStart onTouchMove onTouchEnd onTransitionEnd toggle enable disable in out').split(' ').forEach(function (methodName) {
-      zoom[methodName] = Zoom[methodName].bind(swiper);
-    });
-    Utils.extend(swiper, {
-      zoom: zoom,
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      if (swiper.params.zoom.enabled) {
-        swiper.zoom.enable();
-      }
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      swiper.zoom.disable();
-    },
-    touchStart: function touchStart(e) {
-      var swiper = this;
-      if (!swiper.zoom.enabled) { return; }
-      swiper.zoom.onTouchStart(e);
-    },
-    touchEnd: function touchEnd(e) {
-      var swiper = this;
-      if (!swiper.zoom.enabled) { return; }
-      swiper.zoom.onTouchEnd(e);
-    },
-    doubleTap: function doubleTap(e) {
-      var swiper = this;
-      if (swiper.params.zoom.enabled && swiper.zoom.enabled && swiper.params.zoom.toggle) {
-        swiper.zoom.toggle(e);
-      }
-    },
-    transitionEnd: function transitionEnd() {
-      var swiper = this;
-      if (swiper.zoom.enabled && swiper.params.zoom.enabled) {
-        swiper.zoom.onTransitionEnd();
-      }
-    },
-  },
-};
-
 var Lazy = {
   loadInSlide: function loadInSlide(index, loadInDuplicate) {
     if ( loadInDuplicate === void 0 ) loadInDuplicate = true;
@@ -5392,11 +3802,8 @@ var Lazy = {
     var params = swiper.params.lazy;
     if (typeof index === 'undefined') { return; }
     if (swiper.slides.length === 0) { return; }
-    var isVirtual = swiper.virtual && swiper.params.virtual.enabled;
 
-    var $slideEl = isVirtual
-      ? swiper.$wrapperEl.children(("." + (swiper.params.slideClass) + "[data-swiper-slide-index=\"" + index + "\"]"))
-      : swiper.slides.eq(index);
+    var $slideEl = swiper.slides.eq(index);
 
     var $images = $slideEl.find(("." + (params.elementClass) + ":not(." + (params.loadedClass) + "):not(." + (params.loadingClass) + ")"));
     if ($slideEl.hasClass(params.elementClass) && !$slideEl.hasClass(params.loadedClass) && !$slideEl.hasClass(params.loadingClass)) {
@@ -5457,7 +3864,6 @@ var Lazy = {
     var swiperParams = swiper.params;
     var slides = swiper.slides;
     var activeIndex = swiper.activeIndex;
-    var isVirtual = swiper.virtual && swiperParams.virtual.enabled;
     var params = swiperParams.lazy;
 
     var slidesPerView = swiperParams.slidesPerView;
@@ -5466,24 +3872,17 @@ var Lazy = {
     }
 
     function slideExist(index) {
-      if (isVirtual) {
-        if ($wrapperEl.children(("." + (swiperParams.slideClass) + "[data-swiper-slide-index=\"" + index + "\"]")).length) {
-          return true;
-        }
-      } else if (slides[index]) { return true; }
+      if (slides[index]) { return true; }
       return false;
     }
     function slideIndex(slideEl) {
-      if (isVirtual) {
-        return $$1(slideEl).attr('data-swiper-slide-index');
-      }
       return $$1(slideEl).index();
     }
 
     if (!swiper.lazy.initialImageLoaded) { swiper.lazy.initialImageLoaded = true; }
     if (swiper.params.watchSlidesVisibility) {
       $wrapperEl.children(("." + (swiperParams.slideVisibleClass))).each(function (elIndex, slideEl) {
-        var index = isVirtual ? $$1(slideEl).attr('data-swiper-slide-index') : $$1(slideEl).index();
+        var index = $$1(slideEl).index();
         swiper.lazy.loadInSlide(index);
       });
     } else if (slidesPerView > 1) {
@@ -5565,12 +3964,6 @@ var Lazy$1 = {
         swiper.lazy.load();
       }
     },
-    scrollbarDragMove: function scrollbarDragMove() {
-      var swiper = this;
-      if (swiper.params.lazy.enabled) {
-        swiper.lazy.load();
-      }
-    },
     transitionStart: function transitionStart() {
       var swiper = this;
       if (swiper.params.lazy.enabled) {
@@ -5588,397 +3981,6 @@ var Lazy$1 = {
   },
 };
 
-/* eslint no-bitwise: ["error", { "allow": [">>"] }] */
-var Controller = {
-  LinearSpline: function LinearSpline(x, y) {
-    var binarySearch = (function search() {
-      var maxIndex;
-      var minIndex;
-      var guess;
-      return function (array, val) {
-        minIndex = -1;
-        maxIndex = array.length;
-        while (maxIndex - minIndex > 1) {
-          guess = maxIndex + minIndex >> 1;
-          if (array[guess] <= val) {
-            minIndex = guess;
-          } else {
-            maxIndex = guess;
-          }
-        }
-        return maxIndex;
-      };
-    }());
-    this.x = x;
-    this.y = y;
-    this.lastIndex = x.length - 1;
-    // Given an x value (x2), return the expected y2 value:
-    // (x1,y1) is the known point before given value,
-    // (x3,y3) is the known point after given value.
-    var i1;
-    var i3;
-
-    this.interpolate = function interpolate(x2) {
-      if (!x2) { return 0; }
-
-      // Get the indexes of x1 and x3 (the array indexes before and after given x2):
-      i3 = binarySearch(this.x, x2);
-      i1 = i3 - 1;
-
-      // We have our indexes i1 & i3, so we can calculate already:
-      // y2 := ((x2−x1) × (y3−y1)) ÷ (x3−x1) + y1
-      return (((x2 - this.x[i1]) * (this.y[i3] - this.y[i1])) / (this.x[i3] - this.x[i1])) + this.y[i1];
-    };
-    return this;
-  },
-  // xxx: for now i will just save one spline function to to
-  getInterpolateFunction: function getInterpolateFunction(c) {
-    var swiper = this;
-    if (!swiper.controller.spline) {
-      swiper.controller.spline = swiper.params.loop ?
-        new Controller.LinearSpline(swiper.slidesGrid, c.slidesGrid) :
-        new Controller.LinearSpline(swiper.snapGrid, c.snapGrid);
-    }
-  },
-  setTranslate: function setTranslate(setTranslate$1, byController) {
-    var swiper = this;
-    var controlled = swiper.controller.control;
-    var multiplier;
-    var controlledTranslate;
-    function setControlledTranslate(c) {
-      // this will create an Interpolate function based on the snapGrids
-      // x is the Grid of the scrolled scroller and y will be the controlled scroller
-      // it makes sense to create this only once and recall it for the interpolation
-      // the function does a lot of value caching for performance
-      var translate = c.rtl && c.params.direction === 'horizontal' ? -swiper.translate : swiper.translate;
-      if (swiper.params.controller.by === 'slide') {
-        swiper.controller.getInterpolateFunction(c);
-        // i am not sure why the values have to be multiplicated this way, tried to invert the snapGrid
-        // but it did not work out
-        controlledTranslate = -swiper.controller.spline.interpolate(-translate);
-      }
-
-      if (!controlledTranslate || swiper.params.controller.by === 'container') {
-        multiplier = (c.maxTranslate() - c.minTranslate()) / (swiper.maxTranslate() - swiper.minTranslate());
-        controlledTranslate = ((translate - swiper.minTranslate()) * multiplier) + c.minTranslate();
-      }
-
-      if (swiper.params.controller.inverse) {
-        controlledTranslate = c.maxTranslate() - controlledTranslate;
-      }
-      c.updateProgress(controlledTranslate);
-      c.setTranslate(controlledTranslate, swiper);
-      c.updateActiveIndex();
-      c.updateSlidesClasses();
-    }
-    if (Array.isArray(controlled)) {
-      for (var i = 0; i < controlled.length; i += 1) {
-        if (controlled[i] !== byController && controlled[i] instanceof Swiper$1) {
-          setControlledTranslate(controlled[i]);
-        }
-      }
-    } else if (controlled instanceof Swiper$1 && byController !== controlled) {
-      setControlledTranslate(controlled);
-    }
-  },
-  setTransition: function setTransition(duration, byController) {
-    var swiper = this;
-    var controlled = swiper.controller.control;
-    var i;
-    function setControlledTransition(c) {
-      c.setTransition(duration, swiper);
-      if (duration !== 0) {
-        c.transitionStart();
-        c.$wrapperEl.transitionEnd(function () {
-          if (!controlled) { return; }
-          if (c.params.loop && swiper.params.controller.by === 'slide') {
-            c.loopFix();
-          }
-          c.transitionEnd();
-        });
-      }
-    }
-    if (Array.isArray(controlled)) {
-      for (i = 0; i < controlled.length; i += 1) {
-        if (controlled[i] !== byController && controlled[i] instanceof Swiper$1) {
-          setControlledTransition(controlled[i]);
-        }
-      }
-    } else if (controlled instanceof Swiper$1 && byController !== controlled) {
-      setControlledTransition(controlled);
-    }
-  },
-};
-var Controller$1 = {
-  name: 'controller',
-  params: {
-    controller: {
-      control: undefined,
-      inverse: false,
-      by: 'slide', // or 'container'
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      controller: {
-        control: swiper.params.controller.control,
-        getInterpolateFunction: Controller.getInterpolateFunction.bind(swiper),
-        setTranslate: Controller.setTranslate.bind(swiper),
-        setTransition: Controller.setTransition.bind(swiper),
-      },
-    });
-  },
-  on: {
-    update: function update() {
-      var swiper = this;
-      if (!swiper.controller.control) { return; }
-      if (swiper.controller.spline) {
-        swiper.controller.spline = undefined;
-        delete swiper.controller.spline;
-      }
-    },
-    resize: function resize() {
-      var swiper = this;
-      if (!swiper.controller.control) { return; }
-      if (swiper.controller.spline) {
-        swiper.controller.spline = undefined;
-        delete swiper.controller.spline;
-      }
-    },
-    observerUpdate: function observerUpdate() {
-      var swiper = this;
-      if (!swiper.controller.control) { return; }
-      if (swiper.controller.spline) {
-        swiper.controller.spline = undefined;
-        delete swiper.controller.spline;
-      }
-    },
-    setTranslate: function setTranslate(translate, byController) {
-      var swiper = this;
-      if (!swiper.controller.control) { return; }
-      swiper.controller.setTranslate(translate, byController);
-    },
-    setTransition: function setTransition(duration, byController) {
-      var swiper = this;
-      if (!swiper.controller.control) { return; }
-      swiper.controller.setTransition(duration, byController);
-    },
-  },
-};
-
-var History = {
-  init: function init() {
-    var swiper = this;
-    if (!swiper.params.history) { return; }
-    if (!win.history || !win.history.pushState) {
-      swiper.params.history.enabled = false;
-      swiper.params.hashNavigation.enabled = true;
-      return;
-    }
-    var history = swiper.history;
-    history.initialized = true;
-    history.paths = History.getPathValues();
-    if (!history.paths.key && !history.paths.value) { return; }
-    history.scrollToSlide(0, history.paths.value, swiper.params.runCallbacksOnInit);
-    if (!swiper.params.history.replaceState) {
-      win.addEventListener('popstate', swiper.history.setHistoryPopState);
-    }
-  },
-  destroy: function destroy() {
-    var swiper = this;
-    if (!swiper.params.history.replaceState) {
-      win.removeEventListener('popstate', swiper.history.setHistoryPopState);
-    }
-  },
-  setHistoryPopState: function setHistoryPopState() {
-    var swiper = this;
-    swiper.history.paths = History.getPathValues();
-    swiper.history.scrollToSlide(swiper.params.speed, swiper.history.paths.value, false);
-  },
-  getPathValues: function getPathValues() {
-    var pathArray = win.location.pathname.slice(1).split('/').filter(function (part) { return part !== ''; });
-    var total = pathArray.length;
-    var key = pathArray[total - 2];
-    var value = pathArray[total - 1];
-    return { key: key, value: value };
-  },
-  setHistory: function setHistory(key, index) {
-    var swiper = this;
-    if (!swiper.history.initialized || !swiper.params.history.enabled) { return; }
-    var slide = swiper.slides.eq(index);
-    var value = History.slugify(slide.attr('data-history'));
-    if (!win.location.pathname.includes(key)) {
-      value = key + "/" + value;
-    }
-    var currentState = win.history.state;
-    if (currentState && currentState.value === value) {
-      return;
-    }
-    if (swiper.params.history.replaceState) {
-      win.history.replaceState({ value: value }, null, value);
-    } else {
-      win.history.pushState({ value: value }, null, value);
-    }
-  },
-  slugify: function slugify(text) {
-    return text.toString().toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-')
-      .replace(/^-+/, '')
-      .replace(/-+$/, '');
-  },
-  scrollToSlide: function scrollToSlide(speed, value, runCallbacks) {
-    var swiper = this;
-    if (value) {
-      for (var i = 0, length = swiper.slides.length; i < length; i += 1) {
-        var slide = swiper.slides.eq(i);
-        var slideHistory = History.slugify(slide.attr('data-history'));
-        if (slideHistory === value && !slide.hasClass(swiper.params.slideDuplicateClass)) {
-          var index = slide.index();
-          swiper.slideTo(index, speed, runCallbacks);
-        }
-      }
-    } else {
-      swiper.slideTo(0, speed, runCallbacks);
-    }
-  },
-};
-
-var History$1 = {
-  name: 'history',
-  params: {
-    history: {
-      enabled: false,
-      replaceState: false,
-      key: 'slides',
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      history: {
-        init: History.init.bind(swiper),
-        setHistory: History.setHistory.bind(swiper),
-        setHistoryPopState: History.setHistoryPopState.bind(swiper),
-        scrollToSlide: History.scrollToSlide.bind(swiper),
-        destroy: History.destroy.bind(swiper),
-      },
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      if (swiper.params.history.enabled) {
-        swiper.history.init();
-      }
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      if (swiper.params.history.enabled) {
-        swiper.history.destroy();
-      }
-    },
-    transitionEnd: function transitionEnd() {
-      var swiper = this;
-      if (swiper.history.initialized) {
-        swiper.history.setHistory(swiper.params.history.key, swiper.activeIndex);
-      }
-    },
-  },
-};
-
-var HashNavigation = {
-  onHashCange: function onHashCange() {
-    var swiper = this;
-    var newHash = doc.location.hash.replace('#', '');
-    var activeSlideHash = swiper.slides.eq(swiper.activeIndex).attr('data-hash');
-    if (newHash !== activeSlideHash) {
-      swiper.slideTo(swiper.$wrapperEl.children(("." + (swiper.params.slideClass) + "[data-hash=\"" + newHash + "\"]")).index());
-    }
-  },
-  setHash: function setHash() {
-    var swiper = this;
-    if (!swiper.hashNavigation.initialized || !swiper.params.hashNavigation.enabled) { return; }
-    if (swiper.params.hashNavigation.replaceState && win.history && win.history.replaceState) {
-      win.history.replaceState(null, null, (("#" + (swiper.slides.eq(swiper.activeIndex).attr('data-hash'))) || ''));
-    } else {
-      var slide = swiper.slides.eq(swiper.activeIndex);
-      var hash = slide.attr('data-hash') || slide.attr('data-history');
-      doc.location.hash = hash || '';
-    }
-  },
-  init: function init() {
-    var swiper = this;
-    if (!swiper.params.hashNavigation.enabled || (swiper.params.history && swiper.params.history.enabled)) { return; }
-    swiper.hashNavigation.initialized = true;
-    var hash = doc.location.hash.replace('#', '');
-    if (hash) {
-      var speed = 0;
-      for (var i = 0, length = swiper.slides.length; i < length; i += 1) {
-        var slide = swiper.slides.eq(i);
-        var slideHash = slide.attr('data-hash') || slide.attr('data-history');
-        if (slideHash === hash && !slide.hasClass(swiper.params.slideDuplicateClass)) {
-          var index = slide.index();
-          swiper.slideTo(index, speed, swiper.params.runCallbacksOnInit, true);
-        }
-      }
-    }
-    if (swiper.params.hashNavigation.watchState) {
-      $$1(win).on('hashchange', swiper.hashNavigation.onHashCange);
-    }
-  },
-  destroy: function destroy() {
-    var swiper = this;
-    if (swiper.params.hashNavigation.watchState) {
-      $$1(win).off('hashchange', swiper.hashNavigation.onHashCange);
-    }
-  },
-};
-var HashNavigation$1 = {
-  name: 'hash-navigation',
-  params: {
-    hashNavigation: {
-      enabled: false,
-      replaceState: false,
-      watchState: false,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      hashNavigation: {
-        initialized: false,
-        init: HashNavigation.init.bind(swiper),
-        destroy: HashNavigation.destroy.bind(swiper),
-        setHash: HashNavigation.setHash.bind(swiper),
-        onHashCange: HashNavigation.onHashCange.bind(swiper),
-      },
-    });
-  },
-  on: {
-    init: function init() {
-      var swiper = this;
-      if (swiper.params.hashNavigation.enabled) {
-        swiper.hashNavigation.init();
-      }
-    },
-    destroy: function destroy() {
-      var swiper = this;
-      if (swiper.params.hashNavigation.enabled) {
-        swiper.hashNavigation.destroy();
-      }
-    },
-    transitionEnd: function transitionEnd() {
-      var swiper = this;
-      if (swiper.hashNavigation.initialized) {
-        swiper.hashNavigation.setHash();
-      }
-    },
-  },
-};
-
 var Autoplay = {
   run: function run() {
     var swiper = this;
@@ -5988,21 +3990,7 @@ var Autoplay = {
       delay = $activeSlideEl.attr('data-swiper-autoplay') || swiper.params.autoplay.delay;
     }
     swiper.autoplay.timeout = Utils.nextTick(function () {
-      if (swiper.params.autoplay.reverseDirection) {
-        if (swiper.params.loop) {
-          swiper.loopFix();
-          swiper.slidePrev(swiper.params.speed, true, true);
-          swiper.emit('autoplay');
-        } else if (!swiper.isBeginning) {
-          swiper.slidePrev(swiper.params.speed, true, true);
-          swiper.emit('autoplay');
-        } else if (!swiper.params.autoplay.stopOnLastSlide) {
-          swiper.slideTo(swiper.slides.length - 1, swiper.params.speed, true, true);
-          swiper.emit('autoplay');
-        } else {
-          swiper.autoplay.stop();
-        }
-      } else if (swiper.params.loop) {
+      if (swiper.params.loop) {
         swiper.loopFix();
         swiper.slideNext(swiper.params.speed, true, true);
         swiper.emit('autoplay');
@@ -6071,7 +4059,6 @@ var Autoplay$1 = {
       waitForTransition: true,
       disableOnInteraction: true,
       stopOnLastSlide: false,
-      reverseDirection: false,
     },
   },
   create: function create() {
@@ -6123,511 +4110,6 @@ var Autoplay$1 = {
   },
 };
 
-var Fade = {
-  setTranslate: function setTranslate() {
-    var swiper = this;
-    var slides = swiper.slides;
-    for (var i = 0; i < slides.length; i += 1) {
-      var $slideEl = swiper.slides.eq(i);
-      var offset = $slideEl[0].swiperSlideOffset;
-      var tx = -offset;
-      if (!swiper.params.virtualTranslate) { tx -= swiper.translate; }
-      var ty = 0;
-      if (!swiper.isHorizontal()) {
-        ty = tx;
-        tx = 0;
-      }
-      var slideOpacity = swiper.params.fadeEffect.crossFade ?
-        Math.max(1 - Math.abs($slideEl[0].progress), 0) :
-        1 + Math.min(Math.max($slideEl[0].progress, -1), 0);
-      $slideEl
-        .css({
-          opacity: slideOpacity,
-        })
-        .transform(("translate3d(" + tx + "px, " + ty + "px, 0px)"));
-    }
-  },
-  setTransition: function setTransition(duration) {
-    var swiper = this;
-    var slides = swiper.slides;
-    var $wrapperEl = swiper.$wrapperEl;
-    slides.transition(duration);
-    if (swiper.params.virtualTranslate && duration !== 0) {
-      var eventTriggered = false;
-      slides.transitionEnd(function () {
-        if (eventTriggered) { return; }
-        if (!swiper || swiper.destroyed) { return; }
-        eventTriggered = true;
-        swiper.animating = false;
-        var triggerEvents = ['webkitTransitionEnd', 'transitionend'];
-        for (var i = 0; i < triggerEvents.length; i += 1) {
-          $wrapperEl.trigger(triggerEvents[i]);
-        }
-      });
-    }
-  },
-};
-
-var EffectFade = {
-  name: 'effect-fade',
-  params: {
-    fadeEffect: {
-      crossFade: false,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      fadeEffect: {
-        setTranslate: Fade.setTranslate.bind(swiper),
-        setTransition: Fade.setTransition.bind(swiper),
-      },
-    });
-  },
-  on: {
-    beforeInit: function beforeInit() {
-      var swiper = this;
-      if (swiper.params.effect !== 'fade') { return; }
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "fade"));
-      var overwriteParams = {
-        slidesPerView: 1,
-        slidesPerGroup: 1,
-        watchSlidesProgress: true,
-        spaceBetween: 0,
-        virtualTranslate: true,
-      };
-      Utils.extend(swiper.params, overwriteParams);
-      Utils.extend(swiper.originalParams, overwriteParams);
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      if (swiper.params.effect !== 'fade') { return; }
-      swiper.fadeEffect.setTranslate();
-    },
-    setTransition: function setTransition(duration) {
-      var swiper = this;
-      if (swiper.params.effect !== 'fade') { return; }
-      swiper.fadeEffect.setTransition(duration);
-    },
-  },
-};
-
-var Cube = {
-  setTranslate: function setTranslate() {
-    var swiper = this;
-    var $el = swiper.$el;
-    var $wrapperEl = swiper.$wrapperEl;
-    var slides = swiper.slides;
-    var swiperWidth = swiper.width;
-    var swiperHeight = swiper.height;
-    var rtl = swiper.rtl;
-    var swiperSize = swiper.size;
-    var params = swiper.params.cubeEffect;
-    var isHorizontal = swiper.isHorizontal();
-    var isVirtual = swiper.virtual && swiper.params.virtual.enabled;
-    var wrapperRotate = 0;
-    var $cubeShadowEl;
-    if (params.shadow) {
-      if (isHorizontal) {
-        $cubeShadowEl = $wrapperEl.find('.swiper-cube-shadow');
-        if ($cubeShadowEl.length === 0) {
-          $cubeShadowEl = $$1('<div class="swiper-cube-shadow"></div>');
-          $wrapperEl.append($cubeShadowEl);
-        }
-        $cubeShadowEl.css({ height: (swiperWidth + "px") });
-      } else {
-        $cubeShadowEl = $el.find('.swiper-cube-shadow');
-        if ($cubeShadowEl.length === 0) {
-          $cubeShadowEl = $$1('<div class="swiper-cube-shadow"></div>');
-          $el.append($cubeShadowEl);
-        }
-      }
-    }
-    for (var i = 0; i < slides.length; i += 1) {
-      var $slideEl = slides.eq(i);
-      var slideIndex = i;
-      if (isVirtual) {
-        slideIndex = parseInt($slideEl.attr('data-swiper-slide-index'), 10);
-      }
-      var slideAngle = slideIndex * 90;
-      var round = Math.floor(slideAngle / 360);
-      if (rtl) {
-        slideAngle = -slideAngle;
-        round = Math.floor(-slideAngle / 360);
-      }
-      var progress = Math.max(Math.min($slideEl[0].progress, 1), -1);
-      var tx = 0;
-      var ty = 0;
-      var tz = 0;
-      if (slideIndex % 4 === 0) {
-        tx = -round * 4 * swiperSize;
-        tz = 0;
-      } else if ((slideIndex - 1) % 4 === 0) {
-        tx = 0;
-        tz = -round * 4 * swiperSize;
-      } else if ((slideIndex - 2) % 4 === 0) {
-        tx = swiperSize + (round * 4 * swiperSize);
-        tz = swiperSize;
-      } else if ((slideIndex - 3) % 4 === 0) {
-        tx = -swiperSize;
-        tz = (3 * swiperSize) + (swiperSize * 4 * round);
-      }
-      if (rtl) {
-        tx = -tx;
-      }
-
-      if (!isHorizontal) {
-        ty = tx;
-        tx = 0;
-      }
-
-      var transform = "rotateX(" + (isHorizontal ? 0 : -slideAngle) + "deg) rotateY(" + (isHorizontal ? slideAngle : 0) + "deg) translate3d(" + tx + "px, " + ty + "px, " + tz + "px)";
-      if (progress <= 1 && progress > -1) {
-        wrapperRotate = (slideIndex * 90) + (progress * 90);
-        if (rtl) { wrapperRotate = (-slideIndex * 90) - (progress * 90); }
-      }
-      $slideEl.transform(transform);
-      if (params.slideShadows) {
-        // Set shadows
-        var shadowBefore = isHorizontal ? $slideEl.find('.swiper-slide-shadow-left') : $slideEl.find('.swiper-slide-shadow-top');
-        var shadowAfter = isHorizontal ? $slideEl.find('.swiper-slide-shadow-right') : $slideEl.find('.swiper-slide-shadow-bottom');
-        if (shadowBefore.length === 0) {
-          shadowBefore = $$1(("<div class=\"swiper-slide-shadow-" + (isHorizontal ? 'left' : 'top') + "\"></div>"));
-          $slideEl.append(shadowBefore);
-        }
-        if (shadowAfter.length === 0) {
-          shadowAfter = $$1(("<div class=\"swiper-slide-shadow-" + (isHorizontal ? 'right' : 'bottom') + "\"></div>"));
-          $slideEl.append(shadowAfter);
-        }
-        if (shadowBefore.length) { shadowBefore[0].style.opacity = Math.max(-progress, 0); }
-        if (shadowAfter.length) { shadowAfter[0].style.opacity = Math.max(progress, 0); }
-      }
-    }
-    $wrapperEl.css({
-      '-webkit-transform-origin': ("50% 50% -" + (swiperSize / 2) + "px"),
-      '-moz-transform-origin': ("50% 50% -" + (swiperSize / 2) + "px"),
-      '-ms-transform-origin': ("50% 50% -" + (swiperSize / 2) + "px"),
-      'transform-origin': ("50% 50% -" + (swiperSize / 2) + "px"),
-    });
-
-    if (params.shadow) {
-      if (isHorizontal) {
-        $cubeShadowEl.transform(("translate3d(0px, " + ((swiperWidth / 2) + params.shadowOffset) + "px, " + (-swiperWidth / 2) + "px) rotateX(90deg) rotateZ(0deg) scale(" + (params.shadowScale) + ")"));
-      } else {
-        var shadowAngle = Math.abs(wrapperRotate) - (Math.floor(Math.abs(wrapperRotate) / 90) * 90);
-        var multiplier = 1.5 - (
-          (Math.sin((shadowAngle * 2 * Math.PI) / 360) / 2) +
-          (Math.cos((shadowAngle * 2 * Math.PI) / 360) / 2)
-        );
-        var scale1 = params.shadowScale;
-        var scale2 = params.shadowScale / multiplier;
-        var offset = params.shadowOffset;
-        $cubeShadowEl.transform(("scale3d(" + scale1 + ", 1, " + scale2 + ") translate3d(0px, " + ((swiperHeight / 2) + offset) + "px, " + (-swiperHeight / 2 / scale2) + "px) rotateX(-90deg)"));
-      }
-    }
-    var zFactor = (Browser.isSafari || Browser.isUiWebView) ? (-swiperSize / 2) : 0;
-    $wrapperEl
-      .transform(("translate3d(0px,0," + zFactor + "px) rotateX(" + (swiper.isHorizontal() ? 0 : wrapperRotate) + "deg) rotateY(" + (swiper.isHorizontal() ? -wrapperRotate : 0) + "deg)"));
-  },
-  setTransition: function setTransition(duration) {
-    var swiper = this;
-    var $el = swiper.$el;
-    var slides = swiper.slides;
-    slides
-      .transition(duration)
-      .find('.swiper-slide-shadow-top, .swiper-slide-shadow-right, .swiper-slide-shadow-bottom, .swiper-slide-shadow-left')
-      .transition(duration);
-    if (swiper.params.cubeEffect.shadow && !swiper.isHorizontal()) {
-      $el.find('.swiper-cube-shadow').transition(duration);
-    }
-  },
-};
-
-var EffectCube = {
-  name: 'effect-cube',
-  params: {
-    cubeEffect: {
-      slideShadows: true,
-      shadow: true,
-      shadowOffset: 20,
-      shadowScale: 0.94,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      cubeEffect: {
-        setTranslate: Cube.setTranslate.bind(swiper),
-        setTransition: Cube.setTransition.bind(swiper),
-      },
-    });
-  },
-  on: {
-    beforeInit: function beforeInit() {
-      var swiper = this;
-      if (swiper.params.effect !== 'cube') { return; }
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "cube"));
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "3d"));
-      var overwriteParams = {
-        slidesPerView: 1,
-        slidesPerGroup: 1,
-        watchSlidesProgress: true,
-        resistanceRatio: 0,
-        spaceBetween: 0,
-        centeredSlides: false,
-        virtualTranslate: true,
-      };
-      Utils.extend(swiper.params, overwriteParams);
-      Utils.extend(swiper.originalParams, overwriteParams);
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      if (swiper.params.effect !== 'cube') { return; }
-      swiper.cubeEffect.setTranslate();
-    },
-    setTransition: function setTransition(duration) {
-      var swiper = this;
-      if (swiper.params.effect !== 'cube') { return; }
-      swiper.cubeEffect.setTransition(duration);
-    },
-  },
-};
-
-var Flip = {
-  setTranslate: function setTranslate() {
-    var swiper = this;
-    var slides = swiper.slides;
-    for (var i = 0; i < slides.length; i += 1) {
-      var $slideEl = slides.eq(i);
-      var progress = $slideEl[0].progress;
-      if (swiper.params.flipEffect.limitRotation) {
-        progress = Math.max(Math.min($slideEl[0].progress, 1), -1);
-      }
-      var offset = $slideEl[0].swiperSlideOffset;
-      var rotate = -180 * progress;
-      var rotateY = rotate;
-      var rotateX = 0;
-      var tx = -offset;
-      var ty = 0;
-      if (!swiper.isHorizontal()) {
-        ty = tx;
-        tx = 0;
-        rotateX = -rotateY;
-        rotateY = 0;
-      } else if (swiper.rtl) {
-        rotateY = -rotateY;
-      }
-
-      $slideEl[0].style.zIndex = -Math.abs(Math.round(progress)) + slides.length;
-
-      if (swiper.params.flipEffect.slideShadows) {
-        // Set shadows
-        var shadowBefore = swiper.isHorizontal() ? $slideEl.find('.swiper-slide-shadow-left') : $slideEl.find('.swiper-slide-shadow-top');
-        var shadowAfter = swiper.isHorizontal() ? $slideEl.find('.swiper-slide-shadow-right') : $slideEl.find('.swiper-slide-shadow-bottom');
-        if (shadowBefore.length === 0) {
-          shadowBefore = $$1(("<div class=\"swiper-slide-shadow-" + (swiper.isHorizontal() ? 'left' : 'top') + "\"></div>"));
-          $slideEl.append(shadowBefore);
-        }
-        if (shadowAfter.length === 0) {
-          shadowAfter = $$1(("<div class=\"swiper-slide-shadow-" + (swiper.isHorizontal() ? 'right' : 'bottom') + "\"></div>"));
-          $slideEl.append(shadowAfter);
-        }
-        if (shadowBefore.length) { shadowBefore[0].style.opacity = Math.max(-progress, 0); }
-        if (shadowAfter.length) { shadowAfter[0].style.opacity = Math.max(progress, 0); }
-      }
-      $slideEl
-        .transform(("translate3d(" + tx + "px, " + ty + "px, 0px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg)"));
-    }
-  },
-  setTransition: function setTransition(duration) {
-    var swiper = this;
-    var slides = swiper.slides;
-    var activeIndex = swiper.activeIndex;
-    var $wrapperEl = swiper.$wrapperEl;
-    slides
-      .transition(duration)
-      .find('.swiper-slide-shadow-top, .swiper-slide-shadow-right, .swiper-slide-shadow-bottom, .swiper-slide-shadow-left')
-      .transition(duration);
-    if (swiper.params.virtualTranslate && duration !== 0) {
-      var eventTriggered = false;
-      // eslint-disable-next-line
-      slides.eq(activeIndex).transitionEnd(function onTransitionEnd() {
-        if (eventTriggered) { return; }
-        if (!swiper || swiper.destroyed) { return; }
-        // if (!$(this).hasClass(swiper.params.slideActiveClass)) return;
-        eventTriggered = true;
-        swiper.animating = false;
-        var triggerEvents = ['webkitTransitionEnd', 'transitionend'];
-        for (var i = 0; i < triggerEvents.length; i += 1) {
-          $wrapperEl.trigger(triggerEvents[i]);
-        }
-      });
-    }
-  },
-};
-
-var EffectFlip = {
-  name: 'effect-flip',
-  params: {
-    flipEffect: {
-      slideShadows: true,
-      limitRotation: true,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      flipEffect: {
-        setTranslate: Flip.setTranslate.bind(swiper),
-        setTransition: Flip.setTransition.bind(swiper),
-      },
-    });
-  },
-  on: {
-    beforeInit: function beforeInit() {
-      var swiper = this;
-      if (swiper.params.effect !== 'flip') { return; }
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "flip"));
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "3d"));
-      var overwriteParams = {
-        slidesPerView: 1,
-        slidesPerGroup: 1,
-        watchSlidesProgress: true,
-        spaceBetween: 0,
-        virtualTranslate: true,
-      };
-      Utils.extend(swiper.params, overwriteParams);
-      Utils.extend(swiper.originalParams, overwriteParams);
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      if (swiper.params.effect !== 'flip') { return; }
-      swiper.flipEffect.setTranslate();
-    },
-    setTransition: function setTransition(duration) {
-      var swiper = this;
-      if (swiper.params.effect !== 'flip') { return; }
-      swiper.flipEffect.setTransition(duration);
-    },
-  },
-};
-
-var Coverflow = {
-  setTranslate: function setTranslate() {
-    var swiper = this;
-    var swiperWidth = swiper.width;
-    var swiperHeight = swiper.height;
-    var slides = swiper.slides;
-    var $wrapperEl = swiper.$wrapperEl;
-    var slidesSizesGrid = swiper.slidesSizesGrid;
-    var params = swiper.params.coverflowEffect;
-    var isHorizontal = swiper.isHorizontal();
-    var transform = swiper.translate;
-    var center = isHorizontal ? -transform + (swiperWidth / 2) : -transform + (swiperHeight / 2);
-    var rotate = isHorizontal ? params.rotate : -params.rotate;
-    var translate = params.depth;
-    // Each slide offset from center
-    for (var i = 0, length = slides.length; i < length; i += 1) {
-      var $slideEl = slides.eq(i);
-      var slideSize = slidesSizesGrid[i];
-      var slideOffset = $slideEl[0].swiperSlideOffset;
-      var offsetMultiplier = ((center - slideOffset - (slideSize / 2)) / slideSize) * params.modifier;
-
-      var rotateY = isHorizontal ? rotate * offsetMultiplier : 0;
-      var rotateX = isHorizontal ? 0 : rotate * offsetMultiplier;
-      // var rotateZ = 0
-      var translateZ = -translate * Math.abs(offsetMultiplier);
-
-      var translateY = isHorizontal ? 0 : params.stretch * (offsetMultiplier);
-      var translateX = isHorizontal ? params.stretch * (offsetMultiplier) : 0;
-
-      // Fix for ultra small values
-      if (Math.abs(translateX) < 0.001) { translateX = 0; }
-      if (Math.abs(translateY) < 0.001) { translateY = 0; }
-      if (Math.abs(translateZ) < 0.001) { translateZ = 0; }
-      if (Math.abs(rotateY) < 0.001) { rotateY = 0; }
-      if (Math.abs(rotateX) < 0.001) { rotateX = 0; }
-
-      var slideTransform = "translate3d(" + translateX + "px," + translateY + "px," + translateZ + "px)  rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg)";
-
-      $slideEl.transform(slideTransform);
-      $slideEl[0].style.zIndex = -Math.abs(Math.round(offsetMultiplier)) + 1;
-      if (params.slideShadows) {
-        // Set shadows
-        var $shadowBeforeEl = isHorizontal ? $slideEl.find('.swiper-slide-shadow-left') : $slideEl.find('.swiper-slide-shadow-top');
-        var $shadowAfterEl = isHorizontal ? $slideEl.find('.swiper-slide-shadow-right') : $slideEl.find('.swiper-slide-shadow-bottom');
-        if ($shadowBeforeEl.length === 0) {
-          $shadowBeforeEl = $$1(("<div class=\"swiper-slide-shadow-" + (isHorizontal ? 'left' : 'top') + "\"></div>"));
-          $slideEl.append($shadowBeforeEl);
-        }
-        if ($shadowAfterEl.length === 0) {
-          $shadowAfterEl = $$1(("<div class=\"swiper-slide-shadow-" + (isHorizontal ? 'right' : 'bottom') + "\"></div>"));
-          $slideEl.append($shadowAfterEl);
-        }
-        if ($shadowBeforeEl.length) { $shadowBeforeEl[0].style.opacity = offsetMultiplier > 0 ? offsetMultiplier : 0; }
-        if ($shadowAfterEl.length) { $shadowAfterEl[0].style.opacity = (-offsetMultiplier) > 0 ? -offsetMultiplier : 0; }
-      }
-    }
-
-    // Set correct perspective for IE10
-    if (Support.pointerEvents || Support.prefixedPointerEvents) {
-      var ws = $wrapperEl[0].style;
-      ws.perspectiveOrigin = center + "px 50%";
-    }
-  },
-  setTransition: function setTransition(duration) {
-    var swiper = this;
-    swiper.slides
-      .transition(duration)
-      .find('.swiper-slide-shadow-top, .swiper-slide-shadow-right, .swiper-slide-shadow-bottom, .swiper-slide-shadow-left')
-      .transition(duration);
-  },
-};
-
-var EffectCoverflow = {
-  name: 'effect-coverflow',
-  params: {
-    coverflowEffect: {
-      rotate: 50,
-      stretch: 0,
-      depth: 100,
-      modifier: 1,
-      slideShadows: true,
-    },
-  },
-  create: function create() {
-    var swiper = this;
-    Utils.extend(swiper, {
-      coverflowEffect: {
-        setTranslate: Coverflow.setTranslate.bind(swiper),
-        setTransition: Coverflow.setTransition.bind(swiper),
-      },
-    });
-  },
-  on: {
-    beforeInit: function beforeInit() {
-      var swiper = this;
-      if (swiper.params.effect !== 'coverflow') { return; }
-
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "coverflow"));
-      swiper.classNames.push(((swiper.params.containerModifierClass) + "3d"));
-
-      swiper.params.watchSlidesProgress = true;
-      swiper.originalParams.watchSlidesProgress = true;
-    },
-    setTranslate: function setTranslate() {
-      var swiper = this;
-      if (swiper.params.effect !== 'coverflow') { return; }
-      swiper.coverflowEffect.setTranslate();
-    },
-    setTransition: function setTransition(duration) {
-      var swiper = this;
-      if (swiper.params.effect !== 'coverflow') { return; }
-      swiper.coverflowEffect.setTransition(duration);
-    },
-  },
-};
-
 // Swiper Class
 // Core Modules
 var components = [
@@ -6636,22 +4118,10 @@ var components = [
   Browser$2,
   Resize,
   Observer$1,
-  Virtual$1,
-  Keyboard$1,
-  Mousewheel$1,
   Navigation$1,
   Pagination$1,
-  Scrollbar$1,
-  Zoom$1,
   Lazy$1,
-  Controller$1,
-  History$1,
-  HashNavigation$1,
   Autoplay$1,
-  EffectFade,
-  EffectCube,
-  EffectFlip,
-  EffectCoverflow
 ];
 
 if (typeof Swiper$1.use === 'undefined') {

@@ -7,9 +7,4 @@ let mySwiper = new Swiper ('.swiper-container', {
     pagination: {
       el: '.swiper-pagination',
     },
-    
-    // 如果需要滚动条
-    scrollbar: {
-      el: '.swiper-scrollbar',
-    },
 })  
